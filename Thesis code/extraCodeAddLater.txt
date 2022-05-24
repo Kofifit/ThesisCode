@@ -1,0 +1,33 @@
+# Define the network
+network = []
+
+# Open network text file and load it into list of edges
+url = "https://raw.githubusercontent.com/Kofifit/Motifs-finder-in-networks/main/network.txt"
+file = urllib.request.urlopen(url)
+
+# Run over each line and get the edge
+edge = [0, 0]
+for line in file:
+    nodes = line.split()
+    for i in range(2):
+        edge[i] = int(nodes[i])
+
+    # Add the edge to the network
+    network.append(edge.copy())
+
+network = np.array(network)
+
+# Define number of nodes for motifs
+n = 3
+
+### Stress test ###
+
+# Iterate through number of edges in network
+num_edges = np.arange(5, len(network))
+
+# Create increasing network
+for number in num_edges:
+    currentNetwork = network[0:number]
+    res = networkCombosBrute(n, currentNetwork)
+    print(res)
+
