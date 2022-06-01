@@ -102,17 +102,17 @@ def motifGeneratorBrute(n):
                 otherGraph = edgeAll[combo[otherIndex], :]
                 graphList = []
                 for edge in otherGraph: graphList.extend(edge)
-                copyGraph = graphList.copy()
+                copyGraph = np.copy(graphList)
 
                 # Get a list of the nodes in the sub-graph in order (For example [[2,1],[2,0]] --> [2,1,0])
                 nodes = uniqueNodes(graphList)
 
                 # Replace the "names" of the nodes to find if it matches the motif
                 for com in possCombination:
-                    for index, val in enumerate(graphList):
-                        i = [idx for idx, node in enumerate(nodes) if node == val]
-                        copyGraph[index] = com[i[0]]
-                    if copyGraph in motifList:
+                    for index, val in enumerate(nodes):
+                        indices_replace = np.where(graphList == val)
+                        copyGraph[indices_replace] = com[index]
+                    if id(copyGraph) in motifList:
                         matched.append(otherIndex)
                         break
 
@@ -177,16 +177,16 @@ def networkCombosBrute(n, network):
             subGraph = network[sub_graph, :]
             graphList = []
             for edge in subGraph: graphList.extend(edge)
-            copyGraph = graphList.copy()
+            copyGraph = np.copy(graphList)
 
             # Get a list of nodes in the sub-graph
             nodes = uniqueNodes(graphList)
 
             # Replace the "names" of the nodes to find if it matches the motif
             for com in possCombination:
-                for index, val in enumerate(graphList):
-                    i = [idx for idx, node in enumerate(nodes) if node == val]
-                    copyGraph[index] = com[i[0]]
+                for index, val in enumerate(nodes):
+                    indices_replace = np.where(graphList == val)
+                    copyGraph[indices_replace] = com[index]
                 if copyGraph in motifList:
                     counters[m_index] += 1
                     locations[m_index].append(subGraph)
@@ -212,7 +212,8 @@ def uniqueNodes(vector):
     for val in vector:
         if val not in output or not output:
             output.append(val)
-    return output
+
+    return np.array(output)
 
 
 while True:
@@ -228,7 +229,7 @@ while True:
     print(network)
 
     # Define number of nodes for motifs
-    n = 4
+    n = 3
 
     # Run the function
     res = networkCombosBrute(n, network)
@@ -241,23 +242,24 @@ while True:
 
 
 
-# # Define the network
-# network = []
-# # Open network text file and load it into list of edges
-# f = open('/Users/renanabenyehuda/Desktop/Thesis code/network.txt', 'r')
-#
-# # Run over each line and get the edge
-# for line in f:
-#     nodes = line.split()
-#     edge = [int(nodes[0]), int(nodes[1])]
-#     network.append(edge.copy())
-#
-# network = np.array(network)
+# Define the network
+network = []
+# Open network text file and load it into list of edges
+f = open('/Users/renanabenyehuda/Desktop/Thesis code/network.txt', 'r')
+
+# Run over each line and get the edge
+for line in f:
+    nodes = line.split()
+    edge = [int(nodes[0]), int(nodes[1])]
+    network.append(edge.copy())
+
+network = np.array(network)
+network = network[0:5, :]
 # Define number of nodes for motifs
-# n = 3
+n = 3
 #
-# # Run the function
-# res = networkCombosBrute(n, network)
+# Run the function
+res = networkCombosBrute(n, network)
 #
-# print(res)
+print(res)
 
