@@ -15,13 +15,14 @@ class Graph:
         # default dictionary to store graph
         self.graph = defaultdict(list)
         self.fullyConnected = False
-        self.nodes = defaultdict(list)
+        self.nodes = defaultdict(bool)
 
     # function to add an edge to graph
     def addEdge(self, u, v):
         self.graph[u].append(v)
-        self.nodes[u].append(False)
-        self.nodes[v].append(False)
+        self.graph[v].append(u)
+        self.nodes[u] = False
+        self.nodes[v] = False
 
     # A function used by DFS
     def DFSUtil(self, v, visited):
@@ -51,6 +52,4 @@ class Graph:
         for val in self.nodes.values():
             if val == False:
                 return False
-            return True
-
-
+        return True
