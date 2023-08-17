@@ -1,6 +1,7 @@
 import numpy as np
 import itertools
 from dfs import Graph
+from txt2network import txt2dataframe
 
 
 def subgraph_generator(n):
@@ -103,22 +104,21 @@ def motif_finder_in_network(n, network):
     combo = []  # Define an empty list for the combinations
     possCombination = list(itertools.permutations(range(n)))  # Get a list of all possible combination for renaming nodes
 
-    # Add combinations with exactly n nodes to the list of all combinations
+    # Get node combinations
     for num in edgeNum:
         current_combinations = list(itertools.combinations(np.arange(edgeNetNum), num))
-        for c in current_combinations:
-            nodes = np.unique(np.concatenate((network[tuple(c), :]), axis=0))
-            if has_n_nodes(n, nodes):
-                combo.append(c)
+        combo.extend(current_combinations)
 
     # Add fully connected sub-graphs to the list of sub-graphs
     for c in combo:
-        subgraph, g, nodes_subgraph = get_graph(c, network)
-        if is_fully_connected(g, nodes_subgraph[0]):
-            subgraph['Matched'] = False
-            all_subgraphs.append(subgraph)
-            all_nodesLists.append(np.unique(nodes_subgraph))
-            edgesSubgraphs.append(len(c))
+        nodes = np.unique(np.concatenate((network[tuple(c), :]), axis=0))
+        if has_n_nodes(n, nodes):  # Only if a has at least n nodes, then connectivity would be tested
+            subgraph, g, nodes_subgraph = get_graph(c, network)
+            if is_fully_connected(g, nodes_subgraph[0]):
+                subgraph['Matched'] = False
+                all_subgraphs.append(subgraph)
+                all_nodesLists.append(np.unique(nodes_subgraph))
+                edgesSubgraphs.append(len(c))
 
     # Compare the sub-graphs in the network to the motifs, iterate over motifs
     for m_index, motif in enumerate(motifs):
@@ -229,6 +229,7 @@ def is_fully_connected(graph, start_node = 0):
 
 if __name__ == '__main__':
 
+    """
     for n in range(3, 5):
         motifs, x = motif_generator(n)
         print('\n')
@@ -241,17 +242,25 @@ if __name__ == '__main__':
                 for key, values in motif.items():
                     if key != 'Matched':
                         for value in values:
-                            print(key, value)
+                            print(key, value) """
 
     network = []
     n = input("Please enter number of nodes for the motif search - ")
     while int(n) < 2:
         n = input("Please enter number of nodes that is 2 or greater - ")
-    num_inputs = input("Please enter number of edges in your network - ")
+
+    filename = input("Please enter the file name of your network - ")
+    df = txt2dataframe(filename)
+    for index, row in df.iterrows():
+        edge = row.values.flatten().tolist()
+        network.append(edge[:-1])
+
+    """num_inputs = input("Please enter number of edges in your network - ")
     for i in range(int(num_inputs)):
         edge = input("Please enter an edge for example 9 2 - ")
         edge = [int(i) for i in edge.split()]
-        network.append(edge)
+        network.append(edge)"""
+
     network = np.array(network)
     all_subgraphs, motifs, counters = motif_finder_in_network(int(n), network)
     print('\nTotal number of subgraphs of size n is', len(all_subgraphs), '\nThe subgraphs: ')
