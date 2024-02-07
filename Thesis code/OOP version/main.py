@@ -241,8 +241,8 @@ def runAnalysis(n, network, filename):
     df = pd.DataFrame()
     df['Motif'] = motifs
     df['Number of appearances in network'] = counters
-    indices_col = [set(x) for x in indices]
-    df['Edges indices'] = indices_col
+    # indices_col = [set(x) for x in indices]
+    df['Edges indices'] = indices
     locations = [[] for i in range(0, len(motifs))]
     for subgraph in all_subgraphs:
         temp = []
