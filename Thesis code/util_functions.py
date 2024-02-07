@@ -182,6 +182,47 @@ class UtilFunctions:
             otherNetwork[key] = value
 
 
+    @staticmethod
+    def getNameDict():
+
+        name_dict = {}
+        filename = 'nameDictionary.txt'
+        file = open(filename, 'r')
+        lines = file.readlines()
+        for line in lines:
+            content = line.split()
+            name_dict[int(content[0])] = content[1]
+        return name_dict
+
+
+    @staticmethod
+    def convertNumber2Name(network):
+
+        name_dict = UtilFunctions.getNameDict()
+        for index, data in network.items():
+            geneA = data[0][0]
+            geneB = data[0][1]
+            data[0][0] = name_dict[geneA]
+            data[0][1] = name_dict[geneB]
+            network[index] = data
+        return network
+
+    @staticmethod
+    def nameDictionaryTxt2Csv():
+        df = pd.DataFrame()
+        filename = 'nameDictionary.txt'
+        file = open(filename, 'r')
+        lines = file.readlines()
+        numbers = []
+        names = []
+        for line in lines:
+            content = line.split()
+            numbers.append(content[0])
+            names.append(content[1])
+        df['Gene Number'] = numbers
+        df['Gene Name'] = names
+        df.to_csv('nameDictionary.csv', index=False)
+
 
 
 

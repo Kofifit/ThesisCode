@@ -104,7 +104,7 @@ def motif_finder_in_network(n, network):
     edgesSubgraphs = []
     edge_indices_subgraphs = []
 
-    edgeNum = np.arange(n - 1, n ** 2 - n + 1)  # all possible numbers of edges
+    edgeNum = np.arange(n ** 2 - n, n - 2, -1)  # all possible numbers of edges
     edgeNetNum = len(network)  # Find number of edges in the network
     combo = []  # Define an empty list for the combinations
     possCombination = list(itertools.permutations(range(n)))  # Get a list of all possible combination for renaming nodes
@@ -118,7 +118,7 @@ def motif_finder_in_network(n, network):
     for c in combo:
         edges = [network[k][0] for k in c]
         nodes = np.unique(np.concatenate(edges, axis=0))
-        if has_n_nodes(n, nodes):  # Only if a has at least n nodes, then connectivity would be tested
+        if has_n_nodes(n, nodes) and not is_sub_motif(c, edge_indices_subgraphs):  # Only if a has at least n nodes, then connectivity would be tested
             subgraph, g, nodes_subgraph = get_graph(c, network)
             if is_fully_connected(g, nodes_subgraph[0]):
                 subgraph['Matched'] = False
@@ -225,9 +225,14 @@ def has_n_nodes(n, nodes_subgraph):
     nodes_num = len(nodes_subgraph)
     if np.array_equal(n, nodes_num):
         return True
-    else:
-        return False
+    return False
 
+def is_sub_motif(edges, motifs_edge_list):
+
+    for motif in motifs_edge_list:
+        if set(edges).issubset(set(motif)):
+            return True
+    return False
 
 def is_fully_connected(graph, start_node = 0):
     # This function get a Graph and checks if it is fully connected with DFS algorithm
