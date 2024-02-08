@@ -1,4 +1,5 @@
 from main import runAnalysis
+import pandas as pd
 
 class Network:
 
@@ -181,21 +182,26 @@ class DeltaNetworkMotifAnalyzer:
     def compare(self, network, filename):
         analysis = self.analyze(network, filename)
         originAnalysis_copy = self.originAnalysis.copy(deep=True)
-        indices_remove = []
-        for row_num, indices in enumerate(self.originAnalysis['Edges indices']):
+        origin_indices_remove = []
+        for row_num, row in originAnalysis_copy.iterrows():
+            indices = row['Edges indices']
             for index in indices:
                 delta = network[index][2]
                 if delta == -1:
-                    indices_remove.append(row_num)
+                    origin_indices_remove.append(row_num)
                     break
-        originAnalysis_copy.drop(indices_remove, inplace=True)
-        indices_keep = []
-        for row_num, indices in enumerate(analysis['Edges indices']):
+        originAnalysis_copy.drop(origin_indices_remove, inplace=True)
+        network_indices_remove = []
+        for row_num, row in analysis.iterrows():
+            indices = row['Edges indices']
             for index in indices:
                 delta = network[index][2]
                 if delta == 1:
-                    indices_keep.append(row_num)
+                    network_indices_remove.append(row_num)
                     break
+        analysis.drop(network_indices_remove, inplace=True)
+        result = pd.concat([originAnalysis_copy, analysis], axis=1)
+        return result
 
 
 
