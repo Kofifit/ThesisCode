@@ -93,7 +93,7 @@ class UtilFunctions:
 
 
     @staticmethod
-    def solutionSetFull2excel(solution_set, filename, col_names):
+    def solutionSetFull2excel(solution_set, col_names, filename):
         '''
         This function gets a set of solutions and saves them in a txt file
         :param solution_set - a list of dataframes, each contains a solution for the network:
@@ -102,13 +102,13 @@ class UtilFunctions:
         '''
         with pd.ExcelWriter(filename) as writer:
             for index, solution in enumerate(solution_set):
-                df = UtilFunctions.network2df(solution, col_names=col_names[index])
+                df = UtilFunctions.network2df(solution, col_names=col_names)
                 sheet_name = '#' + str(index)
                 df.to_excel(writer, sheet_name=sheet_name)
 
 
     @staticmethod
-    def solutionSetModified2excel(solution_set, filename):
+    def solutionSetModified2excel(solution_set, col_names, filename):
         '''
         This function gets a set of solutions and saves them in a txt file
         :param solution_set - a list of dataframes, each contains a solution for the network:
@@ -119,7 +119,7 @@ class UtilFunctions:
             origin = solution_set[0]
             for index, solution in enumerate(solution_set):
                 UtilFunctions.find_delta(origin, solution)
-                df = UtilFunctions.network2df(solution)
+                df = UtilFunctions.network2df(solution, col_names)
                 sheet_name = '#' + str(index)
                 df.to_excel(writer, sheet_name=sheet_name)
 
@@ -153,9 +153,9 @@ class UtilFunctions:
         :return solutions_set - a list of dataframes, each contains a solution:
         '''
         solutions_set = []
-        while solution_number >= 0:
+        while solution_number > 0:
             solution_number -= 1
-            edges_number = random.randint(int(len(network)*0.7), len(network))
+            edges_number = random.randint(int(len(network)*0.9), len(network))
             keys = random.sample(network.keys(), edges_number)
             solution_temp = {k: network[k] for k in keys if k in network}
             solutions_set.append(solution_temp)

@@ -143,7 +143,7 @@ def motif_finder_in_network(n, network):
                     subgraph['Matched'] = True
                     subgraph['Motif#'] = m_index
                     counters[m_index] += 1
-                    indices[m_index].extend(edge_indices_subgraphs[g_index])
+                    indices[m_index].append(edge_indices_subgraphs[g_index])
                     break
 
     return all_subgraphs, motifs, counters, indices
@@ -235,7 +235,7 @@ def is_fully_connected(graph, start_node = 0):
 
     return graph.DFS(start_node)
 
-def runAnalysis(n, network, filename):
+def runAnalysis(n, network):
     
     all_subgraphs, motifs, counters, indices = motif_finder_in_network(int(n), network)
     df = pd.DataFrame()
@@ -255,7 +255,6 @@ def runAnalysis(n, network, filename):
     for i, count in enumerate(counters):
         if count == 0:
             df.drop(i, inplace=True)
-    df.to_csv(filename)
     return df
 
 

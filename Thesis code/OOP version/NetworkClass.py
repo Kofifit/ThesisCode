@@ -14,7 +14,7 @@ class Network:
         return self.edges.values()
 
     def addNode(self, node):
-        self.nodes[node.getName()] = node
+        self.nodes.setdefault(node.getName(), node)
         # edges = node.getEdges()
         # for edge in edges:
         #     self.edges.setdefault(edge.getIndex(), edge)
@@ -25,13 +25,21 @@ class Network:
         # for node in nodes:
         #     self.nodes.setdefault(node.getName(), node)
 
+    def createNode(self, name):
+        if self.isNodeIn(name):
+            return self.nodes[name]
+        else:
+            return Node(name)
+
     def createEdge(self, index, edge):
-        nodeA = Node(edge[0][0])
-        nodeB = Node(edge[0][1])
+        nodeA_name = edge[0][0]
+        nodeB_name = edge[0][1]
+        nodeA = self.createNode(nodeA_name)
+        nodeB = self.createNode(nodeB_name)
         edgeObject = Edge(index, nodeA, nodeB, edge[1], edge[2])
         nodeA.addEdge(edgeObject)
-        self.addNode(nodeA)
         nodeB.addEdge(edgeObject)
+        self.addNode(nodeA)
         self.addNode(nodeB)
         self.addEdge(edgeObject)
 
@@ -47,6 +55,11 @@ class Network:
 
     def isEdgeIn(self, edgeIndex):
         if edgeIndex in self.edges.keys():
+            return True
+        return False
+
+    def isNodeIn(self, nodeName):
+        if nodeName in self.nodes.keys():
             return True
         return False
 
@@ -147,21 +160,24 @@ class NetworkDeltaExtractor:
                 for node in edge.getNodes():
                     visited = Network()
                     currentDelta = self.getkDistanceNodeDown(node, self.motif_size - 2, visited)
-                    currentDelta.extractNodes()
                     currentDelta.transferNetwork(self.deltaNetwork)
 
     def getDeltaNetwork(self):
-        self.deltaNetwork.extractEdges()
         return self.deltaNetwork
 
     def getkDistanceNodeDown(self, node, k, visited):
         # Base Case
         if node is None or k < 0:
             return visited
+
         # Add current node to visited
         visited.addNode(node)
+
         # If we didn't reach k distance --> recur for neighbors
         if k > 0:
+            # Add edges of current node to visited
+            for e in node.getEdges():
+                visited.addEdge(e)
             for neighbor in node.getNeighbors():
                 if neighbor.getName() not in visited.nodes.keys():
                     self.getkDistanceNodeDown(neighbor, k - 1, visited)
@@ -173,35 +189,56 @@ class DeltaNetworkMotifAnalyzer:
     def __init__(self, originNetwork, motif_size):
         self.originNetwork = originNetwork
         self.motif_size = motif_size
-        self.originAnalysis = self.analyze(self.originNetwork, 'originAnalysis')
+        self.originAnalysis = self.analyze(self.originNetwork)
 
-    def analyze(self, network, filename):
-        df = runAnalysis(self.motif_size, network, filename)
+    def analyze(self, network):
+        df = runAnalysis(self.motif_size, network)
         return df
 
-    def compare(self, network, filename):
-        analysis = self.analyze(network, filename)
-        originAnalysis_copy = self.originAnalysis.copy(deep=True)
-        origin_indices_remove = []
-        for row_num, row in originAnalysis_copy.iterrows():
-            indices = row['Edges indices']
-            for index in indices:
-                delta = network[index][2]
-                if delta == -1:
-                    origin_indices_remove.append(row_num)
-                    break
-        originAnalysis_copy.drop(origin_indices_remove, inplace=True)
-        network_indices_remove = []
-        for row_num, row in analysis.iterrows():
-            indices = row['Edges indices']
-            for index in indices:
-                delta = network[index][2]
-                if delta == 1:
-                    network_indices_remove.append(row_num)
-                    break
-        analysis.drop(network_indices_remove, inplace=True)
-        result = pd.concat([originAnalysis_copy, analysis], axis=1)
-        return result
+    def saveAnalysis(self, df, filename):
+        df.to_csv(filename)
+
+    def compare(self, network, analysis):
+        originAnalysis_copy = self.originAnalysis.copy()
+
+        if network:
+
+            for row_num, row in originAnalysis_copy.iterrows():
+                origin_indices_remove = []
+                motifs = row['Edges indices']
+                for index, motif in enumerate(motifs):
+                    for edge in motif:
+                        delta = network[edge][2]
+                        if delta == -1:
+                            origin_indices_remove.append(index)
+                            break
+                # Update data in original analysis
+                originAnalysis_copy.at[row_num, 'Edges indices'] = [edge for idx, edge in enumerate(motifs) if idx not in origin_indices_remove]
+                originAnalysis_copy.at[row_num, 'Location of appearances in network'] = [loc for idx, loc in enumerate(row['Location of appearances in network']) if idx not in origin_indices_remove]
+                originAnalysis_copy.at[row_num, 'Number of appearances in network'] = row['Number of appearances in network'] - len(origin_indices_remove)
+
+            for row_num, row in analysis.iterrows():
+                network_indices_keep = []
+                motifs = row['Edges indices']
+                for index, motif in enumerate(motifs):
+                    for edge in motif:
+                        delta = network[edge][2]
+                        if delta == 1:
+                            network_indices_keep.append(index)
+                            break
+                # Update data in analysis
+                analysis.at[row_num, 'Edges indices'] = [edge for idx, edge in enumerate(motifs) if idx in network_indices_keep]
+                analysis.at[row_num, 'Location of appearances in network'] = [loc for idx, loc in enumerate(row['Location of appearances in network']) if idx in network_indices_keep]
+                analysis.at[row_num, 'Number of appearances in network'] = len(network_indices_keep)
+
+                if analysis['Number of appearances in network'].loc[row_num] > 0:
+                    if row_num in originAnalysis_copy.index:
+                        originAnalysis_copy.at[row_num, 'Edges indices'].extend(analysis.at[row_num, 'Edges indices'])
+                        originAnalysis_copy.at[row_num, 'Location of appearances in network'].extend(analysis.at[row_num, 'Location of appearances in network'])
+                        originAnalysis_copy.at[row_num, 'Number of appearances in network'] += len(network_indices_keep)
+                    else:
+                        originAnalysis_copy.append(analysis.loc[row_num], inplace=True)
+        return originAnalysis_copy
 
 
 
