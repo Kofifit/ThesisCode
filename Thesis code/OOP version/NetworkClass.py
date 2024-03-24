@@ -184,7 +184,7 @@ class Edge:
         Check if edge appears in the original network.
         If the edge does not appear in the original network, but appears in this network the delta would be 1.
         """
-        if self.delta == 1:
+        if self.delta == 1 or self.delta == -1:
             return True
         return False
 
@@ -480,13 +480,11 @@ class DeltaNetworkMotifAnalyzer:
                 motifs = row['Edges indices']
                 # Iterate over each motif's location in the analysis of the modified network
                 for index, motif in enumerate(motifs):
-                    keep = False
+                    keep = True
                     # Check if the edge appears in the modified network (delta == 1)
                     for edge in motif:
                         delta = network[edge][2]
-                        if delta == 1:
-                            keep = True
-                        elif delta == -1:
+                        if delta == -1:
                             keep = False
                             break
                     # If the edge is found in the modified network, keep it in the modified analysis

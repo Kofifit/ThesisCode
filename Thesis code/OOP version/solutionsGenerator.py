@@ -164,10 +164,12 @@ if __name__ == '__main__':
             indices_modified = set(row_modified['Edges indices'])
             if indices_full != indices_modified:
                 print(f'Indices list is not the same in Motif No. {row_num}')
-                print('Missing locations in modified analysis:')
-                print(indices_full.difference(indices_modified))
-                print('Missing locations in full analysis:')
-                print(indices_modified.difference(indices_full))
+                if indices_full.difference(indices_modified):
+                    print('Missing locations in modified analysis:')
+                    print(indices_full.difference(indices_modified))
+                if indices_modified.difference(indices_full):
+                    print('Missing locations in full analysis:')
+                    print(indices_modified.difference(indices_full))
 
 
 
