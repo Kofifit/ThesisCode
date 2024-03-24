@@ -1,3 +1,5 @@
+import math
+
 import pandas as pd
 import numpy as np
 import random
@@ -10,9 +12,13 @@ class UtilFunctions:
     @staticmethod
     def csv2network(filename):
         '''
-        This function takes a file name as an input and return the content of the file as a dataframe of the network
-        :param filename - string of the txt file name of the network:
-        :return network - a numpy array that contains the network of the network:
+        Converts a CSV file containing network data into a dictionary representing the network.
+
+        Parameters:
+            filename (str): The name of the CSV file containing the network data.
+
+        Returns:
+            dict: A dictionary representing the network.
         '''
         try:
             df = pd.read_csv(filename)
@@ -25,9 +31,12 @@ class UtilFunctions:
     @staticmethod
     def network2csv(filename, network, col_names):
         '''
-        This function takes a file name as an input and return the content of the file as a dataframe of the network
-        :param filename - string of the txt file name of the network:
-        :return network - a numpy array that contains the network of the network:
+        Converts a dictionary representing a network into a CSV file.
+
+        Parameters:
+            filename (str): The name of the CSV file to save the network data.
+            network (dict): A dictionary representing the network.
+            col_names (list): A list of column names for the CSV file.
         '''
         try:
             df = UtilFunctions.network2df(network, col_names)
@@ -38,6 +47,15 @@ class UtilFunctions:
 
     @staticmethod
     def df2network(df):
+        '''
+        Converts a DataFrame into a dictionary representing the network.
+
+        Parameters:
+            df (DataFrame): The DataFrame containing network data.
+
+        Returns:
+            dict: A dictionary representing the network.
+        '''
         df = df.astype(int)
         network = dict()
         for index, row in df.iterrows():
@@ -47,6 +65,17 @@ class UtilFunctions:
 
     @staticmethod
     def network2df(network, col_names):
+        '''
+        Converts a dictionary representing a network into a DataFrame.
+
+        Parameters:
+            network (dict): A dictionary representing the network.
+            col_names (list): A list of column names for the DataFrame.
+
+        Returns:
+            DataFrame: The DataFrame containing network data.
+        '''
+
         df_origin = pd.DataFrame.from_dict(network, orient='index', columns=col_names)
         df_genes = pd.DataFrame(df_origin.edge.tolist(), index=df_origin.index, columns=['Gene A', 'Gene B'])
         df_origin.drop(columns=['edge'], inplace=True)
@@ -57,6 +86,16 @@ class UtilFunctions:
 
     @staticmethod
     def addMotifs2Network(network, motifs_df):
+        '''
+        Adds motifs data to a network dictionary.
+
+        Parameters:
+            network (dict): The network dictionary to which motifs will be added.
+            motifs_df (DataFrame): DataFrame containing motifs data.
+
+        Returns:
+            dict: The updated network dictionary with motifs added.
+        '''
         for key in network.keys():
             network[key].extend(np.zeros(len(motifs_df), dtype=int))
         index = -len(motifs_df)
@@ -70,9 +109,13 @@ class UtilFunctions:
     @staticmethod
     def csv2analysis(filename):
         '''
-        This function takes a file name as an input and return the content of the file as a dataframe of the network
-        :param filename - string of the txt file name of the analysis:
-        :return network - a dataframe that contains the analysis of the network:
+        Converts a CSV file containing motif analysis data into a DataFrame.
+
+        Parameters:
+            filename (str): The name of the CSV file containing the analysis data.
+
+        Returns:
+            DataFrame: The DataFrame containing motif analysis data.
         '''
         try:
             df = pd.read_csv(filename)
@@ -83,6 +126,15 @@ class UtilFunctions:
 
     @staticmethod
     def analysis2df(analysis):
+        '''
+        Converts a DataFrame containing motif analysis data into a specific format.
+
+        Parameters:
+            analysis (DataFrame): The DataFrame containing analysis data.
+
+        Returns:
+            DataFrame: The modified DataFrame with analysis data.
+        '''
         new_indices = []
         indices = analysis['Edges indices']
         for i in indices:
@@ -95,10 +147,12 @@ class UtilFunctions:
     @staticmethod
     def solutionSetFull2excel(solution_set, col_names, filename):
         '''
-        This function gets a set of solutions and saves them in a txt file
-        :param solution_set - a list of dataframes, each contains a solution for the network:
-        :param filename - a file name in which the solution set would be saved:
-        :return:
+        Writes a set of solutions to an Excel file.
+
+        Parameters:
+            solution_set (list): A list of DataFrames, each containing a solution.
+            col_names (list): A list of column names for the Excel file.
+            filename (str): The name of the Excel file to save the solutions.
         '''
         with pd.ExcelWriter(filename) as writer:
             for index, solution in enumerate(solution_set):
@@ -110,10 +164,12 @@ class UtilFunctions:
     @staticmethod
     def solutionSetModified2excel(solution_set, col_names, filename):
         '''
-        This function gets a set of solutions and saves them in a txt file
-        :param solution_set - a list of dataframes, each contains a solution for the network:
-        :param filename - a file name in which the solution set would be saved:
-        :return:
+        Writes a set of modified solutions to an Excel file.
+
+        Parameters:
+            solution_set (list): A list of DataFrames, each containing a modified solution.
+            col_names (list): A list of column names for the Excel file.
+            filename (str): The name of the Excel file to save the modified solutions.
         '''
         with pd.ExcelWriter(filename) as writer:
             origin = solution_set[0]
@@ -126,6 +182,15 @@ class UtilFunctions:
 
     @staticmethod
     def excel2solutionSetList(filename):
+        '''
+        Reads solutions from an Excel file and returns them as a list of DataFrames.
+
+        Parameters:
+            filename (str): The name of the Excel file containing the solutions.
+
+        Returns:
+            list: A list of dictionaries representing the solutions (each solution is a network).
+        '''
         solutions = []
         df_dict = pd.read_excel(filename, sheet_name=None)
         for key in df_dict.keys():
@@ -137,6 +202,16 @@ class UtilFunctions:
 
     @staticmethod
     def edge2df(edge, df):
+        '''
+        Adds an edge to a DataFrame.
+
+        Parameters:
+            edge (tuple): The edge to be added to the DataFrame.
+            df (DataFrame): The DataFrame to which the edge will be added.
+
+        Returns:
+            DataFrame: The updated DataFrame with the added edge.
+        '''
         index = edge[0]
         nodes = edge[1][0]
         func = edge[1][1]
@@ -144,19 +219,36 @@ class UtilFunctions:
         return df
 
     @staticmethod
-    def generateRandSolutionSet(network, solution_number):
+    def  generateRandSolutionSet(network, solution_number, network_size, delta_size):
         '''
-        This function gets a network and a desired number of solutions.
-        Then it generate the solutions randomly and return them in a list of dataframes.
-        :param solution_number:
-        :param network - a dataframe of a network:
-        :return solutions_set - a list of dataframes, each contains a solution:
+        Generates a set of random solutions for a given network.
+
+        Parameters:
+            network (dict): A dictionary representing the network.
+            solution_number (int): The number of solutions to generate.
+            network_size (int): The size of the network.
+            delta_size (float): The delta size for generating solutions.
+
+        Returns:
+            list: A list of dictionaries, each representing a random solution.
         '''
         solutions_set = []
-        while solution_number > 0:
-            solution_number -= 1
-            edges_number = random.randint(int(len(network)*0.9), len(network))
-            keys = random.sample(network.keys(), edges_number)
+        origin_keys = []
+        rest_keys = []
+        counter = 0
+        while counter < solution_number:
+            counter += 1
+            if counter == 1:
+                keys = random.sample(network.keys(), network_size)
+                origin_keys = keys
+                for k in network.keys():
+                    if k not in origin_keys:
+                        rest_keys.append(k)
+            else:
+                keys_from_origin = random.sample(origin_keys, math.floor(network_size*(1-delta_size)))
+                keys_from_rest = random.sample(rest_keys, math.ceil(network_size*delta_size))
+                keys = keys_from_origin + keys_from_rest
+
             solution_temp = {k: network[k] for k in keys if k in network}
             solutions_set.append(solution_temp)
         return solutions_set
@@ -164,6 +256,13 @@ class UtilFunctions:
 
     @staticmethod
     def find_delta(originNetwork, otherNetwork):
+        '''
+        Finds the differences between two networks and updates the second network accordingly.
+
+        Parameters:
+            originNetwork (dict): The original network.
+            otherNetwork (dict): The network to be updated with differences.
+        '''
 
         originNetworkCopy = copy.deepcopy(originNetwork)
 

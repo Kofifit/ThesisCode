@@ -104,7 +104,7 @@ def motif_finder_in_network(n, network):
     edgesSubgraphs = []
     edge_indices_subgraphs = []
 
-    edgeNum = np.arange(n - 1, n ** 2 - n + 1)  # all possible numbers of edges
+    edgeNum = np.arange(n ** 2 - n, n - 2, -1)  # all possible numbers of edges
     edgeNetNum = len(network)  # Find number of edges in the network
     combo = []  # Define an empty list for the combinations
     possCombination = list(itertools.permutations(range(n)))  # Get a list of all possible combination for renaming nodes
@@ -128,12 +128,14 @@ def motif_finder_in_network(n, network):
                 edge_indices_subgraphs.append(c)
 
     # Compare the sub-graphs in the network to the motifs, iterate over motifs
-    for m_index, motif in enumerate(motifs):
+    for m_index, motif in reversed(list(enumerate(motifs))):
 
         # Iterate over all sub-graphs in the network and match with current motif
         for g_index, subgraph in enumerate(all_subgraphs):
             # Check if subgraph wasn't matched before or number of edges of subgraph isn't the same as the motif
-            if subgraph['Matched'] or edgesSubgraphs[g_index] != edgesMotifs[m_index]:
+            if subgraph['Matched'] \
+                    or edgesSubgraphs[g_index] != edgesMotifs[m_index] \
+                    or is_subgraph_found(edge_indices_subgraphs[g_index], list(itertools.chain(*indices))):
                 continue
 
             for combo in possCombination:
@@ -143,7 +145,7 @@ def motif_finder_in_network(n, network):
                     subgraph['Matched'] = True
                     subgraph['Motif#'] = m_index
                     counters[m_index] += 1
-                    indices[m_index].append(edge_indices_subgraphs[g_index])
+                    indices[m_index].append(tuple(sorted(edge_indices_subgraphs[g_index])))
                     break
 
     return all_subgraphs, motifs, counters, indices
@@ -235,6 +237,16 @@ def is_fully_connected(graph, start_node = 0):
 
     return graph.DFS(start_node)
 
+
+def is_subgraph_found(subgraph_indices, all_indices):
+
+    for graph in all_indices:
+        if len(graph) > len(subgraph_indices):
+            if set(subgraph_indices).issubset(set(graph)):
+                return True
+    return False
+
+
 def runAnalysis(n, network):
     
     all_subgraphs, motifs, counters, indices = motif_finder_in_network(int(n), network)
@@ -245,12 +257,13 @@ def runAnalysis(n, network):
     df['Edges indices'] = indices
     locations = [[] for i in range(0, len(motifs))]
     for subgraph in all_subgraphs:
-        temp = []
-        for key, values in subgraph.items():
-            if key != 'Matched' and key != 'Motif#':
-                for value in values:
-                    temp.append([key, value])
-        locations[subgraph['Motif#']].append(temp)
+        if subgraph['Matched']:
+            temp = []
+            for key, values in subgraph.items():
+                if key != 'Matched' and key != 'Motif#':
+                    for value in values:
+                        temp.append([key, value])
+            locations[subgraph['Motif#']].append(temp)
     df['Location of appearances in network'] = locations
     for i, count in enumerate(counters):
         if count == 0:
