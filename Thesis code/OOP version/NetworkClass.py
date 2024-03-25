@@ -463,21 +463,14 @@ class DeltaNetworkMotifAnalyzer:
                 motifs = row['Edges indices']
                 # Iterate over each motif's location in the analysis of the modified network
                 for index, motif in enumerate(motifs):
-                    remove = False
                     sub_motif = False
                     # Check if the edge appears in the modified network (delta == 1)
                     for edge in motif:
                         delta = network[edge][2]
-                        if delta == -1:
-                            remove = True
-                            break
-                        elif delta == 1:
+                        if delta == 1:
                             sub_motif = True
-                    # If the edge is found in the modified network, keep it in the modified analysis
-                    if remove:
-                        network_indices_remove.append(index)
                     # If exists a sub-motif, add it to the list of sub-motifs for removal from origin analysis
-                    elif not remove and sub_motif:
+                    if sub_motif:
                         submotif_remove.append(tuple(i for i in motif if network[i][2] == 0))
 
                 # Update the analysis to keep edges that were found in the modified network
