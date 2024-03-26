@@ -440,7 +440,7 @@ class DeltaNetworkMotifAnalyzer:
 
         df.to_csv(filename)
 
-    def compare(self, network, analysis):
+    def compare(self, network, delta_network, analysis):
         """
         Compares the analysis results between the original network and a modified network.
         This method identifies the common motifs for the modified network and the original,
@@ -463,14 +463,21 @@ class DeltaNetworkMotifAnalyzer:
                 motifs = row['Edges indices']
                 # Iterate over each motif's location in the analysis of the modified network
                 for index, motif in enumerate(motifs):
+                    remove = False
                     sub_motif = False
                     # Check if the edge appears in the modified network (delta == 1)
                     for edge in motif:
                         delta = network[edge][2]
-                        if delta == 1:
+                        if delta == -1:
+                            remove = True
+                            break
+                        elif delta == 1:
                             sub_motif = True
+                    # If the edge is found in the modified network, keep it in the modified analysis
+                    if remove:
+                        network_indices_remove.append(index)
                     # If exists a sub-motif, add it to the list of sub-motifs for removal from origin analysis
-                    if sub_motif:
+                    elif not remove and sub_motif:
                         submotif_remove.append(tuple(i for i in motif if network[i][2] == 0))
 
                 # Update the analysis to keep edges that were found in the modified network
@@ -480,25 +487,29 @@ class DeltaNetworkMotifAnalyzer:
 
             # Iterate over each row (motif) in the original analysis
             for row_num, row in originAnalysis_copy.iterrows():
-                origin_indices_remove = []
+                origin_indices_keep = []
                 motifs = row['Edges indices']
                 # Iterate over each motif's location in the analysis of the original network
                 for index, motif in enumerate(motifs):
-                    remove = False
+                    keep = False
                     for edge in motif:
                         delta = network[edge][2]
-                        # Check if the edge does not appear in the modified network
+                        # Check if the edge does not appear in the delta network
+                        if edge not in delta_network.keys():
+                            # Keep motif in the original analysis
+                            keep = True
+                        # Check if the edge does not appear in the modified network at all
                         if delta == -1:
-                            # Remove the edge from the original analysis
-                            remove = True
+                            # Remove motif from the original analysis
+                            keep = False
                             break
-                    if remove or motif in submotif_remove:
-                        origin_indices_remove.append(index)
+                    if keep:
+                        origin_indices_keep.append(index)
 
                 # Update the original analysis to remove edges that were not found in the modified network
-                originAnalysis_copy.at[row_num, 'Edges indices'] = [edge for idx, edge in enumerate(motifs) if idx not in origin_indices_remove]
-                originAnalysis_copy.at[row_num, 'Location of appearances in network'] = [loc for idx, loc in enumerate(row['Location of appearances in network']) if idx not in origin_indices_remove]
-                originAnalysis_copy.at[row_num, 'Number of appearances in network'] = row['Number of appearances in network'] - len(origin_indices_remove)
+                originAnalysis_copy.at[row_num, 'Edges indices'] = [edge for idx, edge in enumerate(motifs) if idx in origin_indices_keep]
+                originAnalysis_copy.at[row_num, 'Location of appearances in network'] = [loc for idx, loc in enumerate(row['Location of appearances in network']) if idx in origin_indices_keep]
+                originAnalysis_copy.at[row_num, 'Number of appearances in network'] = len(origin_indices_keep)
 
                 # If the motif still has appearances in the analysis of the modified network, add them to the copy original analysis
                 if analysis['Number of appearances in network'].loc[row_num] > 0:

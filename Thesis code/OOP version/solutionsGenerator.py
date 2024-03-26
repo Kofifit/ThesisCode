@@ -122,7 +122,7 @@ if __name__ == '__main__':
                     deltaNetwork = NetworkDisessembler(delta).getNetwork()
                     # Perform motif analysis on the delta network
                     analysis = analyzer.analyze(deltaNetwork)
-                    analysis = analyzer.compare(s, analysis)
+                    analysis = analyzer.compare(s, deltaNetwork, analysis)
                     end_time = time()
                     elapsed_time = end_time - start_time
                     time_modified.append(elapsed_time)
