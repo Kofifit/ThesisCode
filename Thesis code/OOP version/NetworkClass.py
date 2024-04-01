@@ -455,73 +455,105 @@ class DeltaNetworkMotifAnalyzer:
         """
         originAnalysis_copy = self.originAnalysis.copy()
         submotif_remove = []
-        if network:
 
-            # Iterate over each row (motif) in the analysis of the modified network
-            for row_num, row in analysis.iterrows():
-                network_indices_remove = []
-                motifs = row['Edges indices']
-                # Iterate over each motif's location in the analysis of the modified network
-                for index, motif in enumerate(motifs):
-                    remove = False
-                    sub_motif = False
-                    # Check if the edge appears in the modified network (delta == 1)
-                    for edge in motif:
-                        delta = network[edge][2]
-                        if delta == -1:
-                            remove = True
-                            break
-                        elif delta == 1:
-                            sub_motif = True
-                    # If the edge is found in the modified network, keep it in the modified analysis
-                    if remove:
-                        network_indices_remove.append(index)
-                    # If exists a sub-motif, add it to the list of sub-motifs for removal from origin analysis
-                    elif not remove and sub_motif:
-                        submotif_remove.append(tuple(i for i in motif if network[i][2] == 0))
+        # Iterate over each row (motif) in the analysis of the modified network
+        for row_num, row in analysis.iterrows():
+            network_indices_remove = []
+            motifs = row['Edges indices']
+            # Iterate over each motif's location in the analysis of the modified network
+            for index, motif in enumerate(motifs):
+                remove = False
+                sub_motif = False
+                # Check if the edge appears in the modified network (delta == 1)
+                for edge in motif:
+                    delta = network[edge][2]
+                    if delta == -1:
+                        remove = True
+                        break
+                    elif delta == 1:
+                        sub_motif = True
+                # If the edge is found in the modified network, keep it in the modified analysis
+                if remove:
+                    network_indices_remove.append(index)
+                # If exists a sub-motif, add it to the list of sub-motifs for removal from origin analysis
+                elif not remove and sub_motif:
+                    submotif_remove.append(tuple(i for i in motif if network[i][2] == 0))
 
-                # Update the analysis to keep edges that were found in the modified network
-                analysis.at[row_num, 'Edges indices'] = [edge for idx, edge in enumerate(motifs) if idx not in network_indices_remove]
-                analysis.at[row_num, 'Location of appearances in network'] = [loc for idx, loc in enumerate(row['Location of appearances in network']) if idx not in network_indices_remove]
-                analysis.at[row_num, 'Number of appearances in network'] = row['Number of appearances in network'] - len(network_indices_remove)
+            # Update the analysis to keep edges that were found in the modified network
+            analysis.at[row_num, 'Edges indices'] = [edge for idx, edge in enumerate(motifs) if idx not in network_indices_remove]
+            analysis.at[row_num, 'Location of appearances in network'] = [loc for idx, loc in enumerate(row['Location of appearances in network']) if idx not in network_indices_remove]
+            analysis.at[row_num, 'Number of appearances in network'] = row['Number of appearances in network'] - len(network_indices_remove)
 
-            # Iterate over each row (motif) in the original analysis
-            for row_num, row in originAnalysis_copy.iterrows():
-                origin_indices_keep = []
-                motifs = row['Edges indices']
-                # Iterate over each motif's location in the analysis of the original network
-                for index, motif in enumerate(motifs):
-                    keep = False
-                    for edge in motif:
-                        delta = network[edge][2]
-                        # Check if the edge does not appear in the delta network
-                        if edge not in delta_network.keys():
-                            # Keep motif in the original analysis
-                            keep = True
-                        # Check if the edge does not appear in the modified network at all
-                        if delta == -1:
-                            # Remove motif from the original analysis
-                            keep = False
-                            break
-                    if keep:
-                        origin_indices_keep.append(index)
+        # Iterate over each row (motif) in the original analysis
+        for row_num, row in originAnalysis_copy.iterrows():
+            origin_indices_keep = []
+            motifs = row['Edges indices']
+            # Iterate over each motif's location in the analysis of the original network
+            for index, motif in enumerate(motifs):
+                keep = False
+                for edge in motif:
+                    delta = network[edge][2]
+                    # Check if the edge does not appear in the delta network
+                    if edge not in delta_network.keys():
+                        # Keep motif in the original analysis
+                        keep = True
+                    # Check if the edge does not appear in the modified network at all
+                    if delta == -1:
+                        # Remove motif from the original analysis
+                        keep = False
+                        break
+                if keep:
+                    origin_indices_keep.append(index)
 
-                # Update the original analysis to remove edges that were not found in the modified network
-                originAnalysis_copy.at[row_num, 'Edges indices'] = [edge for idx, edge in enumerate(motifs) if idx in origin_indices_keep]
-                originAnalysis_copy.at[row_num, 'Location of appearances in network'] = [loc for idx, loc in enumerate(row['Location of appearances in network']) if idx in origin_indices_keep]
-                originAnalysis_copy.at[row_num, 'Number of appearances in network'] = len(origin_indices_keep)
+            # Update the original analysis to remove edges that were not found in the modified network
+            originAnalysis_copy.at[row_num, 'Edges indices'] = [edge for idx, edge in enumerate(motifs) if idx in origin_indices_keep]
+            originAnalysis_copy.at[row_num, 'Location of appearances in network'] = [loc for idx, loc in enumerate(row['Location of appearances in network']) if idx in origin_indices_keep]
+            originAnalysis_copy.at[row_num, 'Number of appearances in network'] = len(origin_indices_keep)
 
-                # If the motif still has appearances in the analysis of the modified network, add them to the copy original analysis
-                if analysis['Number of appearances in network'].loc[row_num] > 0:
-                    if row_num in originAnalysis_copy.index:
-                        originAnalysis_copy.at[row_num, 'Edges indices'].extend(analysis.at[row_num, 'Edges indices'])
-                        originAnalysis_copy.at[row_num, 'Location of appearances in network'].extend(analysis.at[row_num, 'Location of appearances in network'])
-                        originAnalysis_copy.at[row_num, 'Number of appearances in network'] += analysis.at[row_num, 'Number of appearances in network']
-                    else:
-                        originAnalysis_copy = originAnalysis_copy._append(analysis.loc[row_num])
+            # If the motif still has appearances in the analysis of the modified network, add them to the copy original analysis
+            if analysis['Number of appearances in network'].loc[row_num] > 0:
+                if row_num in originAnalysis_copy.index:
+                    originAnalysis_copy.at[row_num, 'Edges indices'].extend(analysis.at[row_num, 'Edges indices'])
+                    originAnalysis_copy.at[row_num, 'Location of appearances in network'].extend(analysis.at[row_num, 'Location of appearances in network'])
+                    originAnalysis_copy.at[row_num, 'Number of appearances in network'] += analysis.at[row_num, 'Number of appearances in network']
+                else:
+                    originAnalysis_copy = originAnalysis_copy._append(analysis.loc[row_num])
 
-            final_analysis = originAnalysis_copy
+        temp_analysis = originAnalysis_copy
+
+        # Get all indices for each motif
+        all_motif_indices = []
+        for motif_num, motif in temp_analysis.iterrows():
+            all_motif_indices.append(motif['Edges indices'])
+
+        # Fin all motifs in the analysis that are truly sub-motifs
+        submotif_remove = [[] for i in range(0, len(temp_analysis))]
+        for motif_type_index, motif_indices in enumerate(all_motif_indices):
+            for motif_loc_index, motif in enumerate(motif_indices):
+                if self.is_submotif(motif, [x for xs in all_motif_indices for x in xs]):
+                    submotif_remove[motif_type_index].append(motif_loc_index)
+
+        # Remove all sub-motifs from the analysis
+        for row_num, indices_remove in enumerate(submotif_remove):
+            if indices_remove:
+                row = temp_analysis.iloc[row_num]
+                temp_analysis.at[row_num, 'Edges indices'] = [edge for idx, edge in enumerate(row['Edges indices']) if idx not in indices_remove]
+                temp_analysis.at[row_num, 'Location of appearances in network'] = [loc for idx, loc in enumerate(row['Location of appearances in network']) if idx not in indices_remove]
+                temp_analysis.at[row_num, 'Number of appearances in network'] = row['Number of appearances in network'] - len(indices_remove)
+
+        final_analysis = temp_analysis
+
         return final_analysis
+
+    def is_submotif(self, subgraph_indices, all_indices):
+        for graph in all_indices:
+            if len(graph) > len(subgraph_indices):
+                if set(subgraph_indices).issubset(set(graph)):
+                    return True
+        return False
+
+
+
 
 
 
