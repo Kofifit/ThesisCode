@@ -347,11 +347,17 @@ class NetworkDeltaExtractor:
         Use the 'getkDistanceNodeDown' function to explore and retrieve the nodes around the delta edges
         """
         edges = self.network.getEdges()
+        # Iterate over each edge in the network
         for edge in edges:
+            # Check if the edge is a delta edge -1 or +1
             if edge.isDelta():
+                # Iterate over each node in the edge
                 for node in edge.getNodes():
+                    # Initialize a new Network object to store visited nodes and edges
                     visited = Network()
+                    # Recursively explore nodes around the delta edge
                     currentDelta = self.getkDistanceNodeDown(node, self.motif_size - 2, visited)
+                    # Transfer the explored network to the deltaNetwork
                     currentDelta.transferNetwork(self.deltaNetwork)
 
     def getDeltaNetwork(self):
@@ -454,37 +460,8 @@ class DeltaNetworkMotifAnalyzer:
             DataFrame: DataFrame containing the compared analysis results.
         """
         originAnalysis_copy = self.originAnalysis.copy()
-        submotif_remove = []
 
-        # Iterate over each row (motif) in the analysis of the modified network
-        for row_num, row in analysis.iterrows():
-            network_indices_remove = []
-            motifs = row['Edges indices']
-            # Iterate over each motif's location in the analysis of the modified network
-            for index, motif in enumerate(motifs):
-                remove = False
-                sub_motif = False
-                # Check if the edge appears in the modified network (delta == 1)
-                for edge in motif:
-                    delta = network[edge][2]
-                    if delta == -1:
-                        remove = True
-                        break
-                    elif delta == 1:
-                        sub_motif = True
-                # If the edge is found in the modified network, keep it in the modified analysis
-                if remove:
-                    network_indices_remove.append(index)
-                # If exists a sub-motif, add it to the list of sub-motifs for removal from origin analysis
-                elif not remove and sub_motif:
-                    submotif_remove.append(tuple(i for i in motif if network[i][2] == 0))
-
-            # Update the analysis to keep edges that were found in the modified network
-            analysis.at[row_num, 'Edges indices'] = [edge for idx, edge in enumerate(motifs) if idx not in network_indices_remove]
-            analysis.at[row_num, 'Location of appearances in network'] = [loc for idx, loc in enumerate(row['Location of appearances in network']) if idx not in network_indices_remove]
-            analysis.at[row_num, 'Number of appearances in network'] = row['Number of appearances in network'] - len(network_indices_remove)
-
-        # Iterate over each row (motif) in the original analysis
+       # Iterate over each row (motif) in the original analysis
         for row_num, row in originAnalysis_copy.iterrows():
             origin_indices_keep = []
             motifs = row['Edges indices']
@@ -511,23 +488,21 @@ class DeltaNetworkMotifAnalyzer:
             originAnalysis_copy.at[row_num, 'Number of appearances in network'] = len(origin_indices_keep)
 
             # If the motif still has appearances in the analysis of the modified network, add them to the copy original analysis
-            if analysis['Number of appearances in network'].loc[row_num] > 0:
-                if row_num in originAnalysis_copy.index:
-                    originAnalysis_copy.at[row_num, 'Edges indices'].extend(analysis.at[row_num, 'Edges indices'])
-                    originAnalysis_copy.at[row_num, 'Location of appearances in network'].extend(analysis.at[row_num, 'Location of appearances in network'])
-                    originAnalysis_copy.at[row_num, 'Number of appearances in network'] += analysis.at[row_num, 'Number of appearances in network']
+            if originAnalysis_copy['Number of appearances in network'].loc[row_num] > 0:
+                if row_num in analysis.index:
+                    analysis.at[row_num, 'Edges indices'].extend(originAnalysis_copy.at[row_num, 'Edges indices'])
+                    analysis.at[row_num, 'Location of appearances in network'].extend(originAnalysis_copy.at[row_num, 'Location of appearances in network'])
+                    analysis.at[row_num, 'Number of appearances in network'] += originAnalysis_copy.at[row_num, 'Number of appearances in network']
                 else:
-                    originAnalysis_copy = originAnalysis_copy._append(analysis.loc[row_num])
-
-        temp_analysis = originAnalysis_copy
+                    analysis = analysis._append(originAnalysis_copy.loc[row_num])
 
         # Get all indices for each motif
         all_motif_indices = []
-        for motif_num, motif in temp_analysis.iterrows():
+        for motif_num, motif in analysis.iterrows():
             all_motif_indices.append(motif['Edges indices'])
 
-        # Fin all motifs in the analysis that are truly sub-motifs
-        submotif_remove = [[] for i in range(0, len(temp_analysis))]
+        # Find all motifs in the analysis that are truly sub-motifs
+        submotif_remove = [[] for i in range(0, len(analysis))]
         for motif_type_index, motif_indices in enumerate(all_motif_indices):
             for motif_loc_index, motif in enumerate(motif_indices):
                 if self.is_submotif(motif, [x for xs in all_motif_indices for x in xs]):
@@ -536,14 +511,12 @@ class DeltaNetworkMotifAnalyzer:
         # Remove all sub-motifs from the analysis
         for row_num, indices_remove in enumerate(submotif_remove):
             if indices_remove:
-                row = temp_analysis.iloc[row_num]
-                temp_analysis.at[row_num, 'Edges indices'] = [edge for idx, edge in enumerate(row['Edges indices']) if idx not in indices_remove]
-                temp_analysis.at[row_num, 'Location of appearances in network'] = [loc for idx, loc in enumerate(row['Location of appearances in network']) if idx not in indices_remove]
-                temp_analysis.at[row_num, 'Number of appearances in network'] = row['Number of appearances in network'] - len(indices_remove)
+                row = analysis.iloc[row_num]
+                analysis.at[row_num, 'Edges indices'] = [edge for idx, edge in enumerate(row['Edges indices']) if idx not in indices_remove]
+                analysis.at[row_num, 'Location of appearances in network'] = [loc for idx, loc in enumerate(row['Location of appearances in network']) if idx not in indices_remove]
+                analysis.at[row_num, 'Number of appearances in network'] = row['Number of appearances in network'] - len(indices_remove)
 
-        final_analysis = temp_analysis
-
-        return final_analysis
+        return analysis
 
     def is_submotif(self, subgraph_indices, all_indices):
         for graph in all_indices:

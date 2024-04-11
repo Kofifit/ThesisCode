@@ -1,0 +1,4 @@
+,Motif,Number of appearances in network,Edges indices,Location of appearances in network
+0,"{0: [1, 2], 'Matched': True}",2,"[(17, 20), (93, 95)]","[[[7, 44], [7, 8]], [[35, 82], [35, 36]]]"
+1,"{0: [1], 1: [2], 'Matched': True}",1,"[(58, 97)]","[[[37, 38], [16, 37]]]"
+2,"{0: [1], 2: [1], 'Matched': True}",1,"[(52, 93)]","[[[15, 36], [35, 36]]]"
