@@ -1,4 +1,9 @@
 from main import runAnalysis
+from util_functions import UtilFunctions
+import networkx as nx
+import matplotlib.pyplot as plt
+
+
 import pandas as pd
 
 class Network:
@@ -524,6 +529,172 @@ class DeltaNetworkMotifAnalyzer:
                 if set(subgraph_indices).issubset(set(graph)):
                     return True
         return False
+
+
+class GraphVisualization:
+
+    def __init__(self, solutions):
+        self.solutions = solutions
+
+    def createRegularGraph(self, network, name):
+        network = UtilFunctions.Network2NetworkX(network)
+        edges = network.edges()
+        node_size = 50
+
+        pos_dict = {}
+        pos_dict['sfdp'] = nx.drawing.nx_agraph.graphviz_layout(network, prog='sfdp')
+        pos_dict['fdp'] = nx.drawing.nx_agraph.graphviz_layout(network, prog='fdp')
+        pos_dict['neato'] = nx.drawing.nx_agraph.graphviz_layout(network, prog='neato')
+
+
+        for pos_name, pos in pos_dict.items():
+            plt.figure(figsize=(10, 6))
+            nx.draw(network, pos=pos, edgelist=[(u, v) for u, v in edges if network[u][v]['function']==2], node_size=node_size, node_color='blue', arrowstyle='->')
+            nx.draw(network, pos=pos, edgelist=[(u, v) for u, v in edges if network[u][v]['function']==1], node_size=node_size, node_color='blue', arrowstyle='-[', arrowsize=7)
+            plt.suptitle((name + f'organized using {pos_name}'))
+            plt.savefig(name + f'_{pos_name}.png')
+            plt.close()
+
+    def createMotifNetworkGraph(self, network, name, motif_index):
+        network = UtilFunctions.Network2NetworkX(network)
+        edges = network.edges()
+        colors = [[], []]
+        for u, v in edges:
+            if network[u][v]['function'] == 2:
+                index = 0
+            else:
+                index = 1
+
+            motifs = network[u][v]['motifs']
+            color = 'black'
+            if motif_index < len(motifs):
+                if motifs[motif_index] == 1:
+                    color = 'red'
+            colors[index].append(color)
+
+        node_size = 50
+
+        pos_dict = {}
+        pos_dict['sfdp'] = nx.drawing.nx_agraph.graphviz_layout(network, prog='sfdp')
+        pos_dict['fdp'] = nx.drawing.nx_agraph.graphviz_layout(network, prog='fdp')
+        pos_dict['neato'] = nx.drawing.nx_agraph.graphviz_layout(network, prog='neato')
+
+        for pos_name, pos in pos_dict.items():
+            plt.figure(figsize=(10, 6))
+            nx.draw(network, pos=pos, edgelist=[(u, v) for u, v in edges if network[u][v]['function'] == 2],
+                    edge_color=colors[0], node_size=node_size, node_color='blue', arrowstyle='->')
+            nx.draw(network, pos=pos, edgelist=[(u, v) for u, v in edges if network[u][v]['function'] == 1],
+                    edge_color=colors[1], node_size=node_size, node_color='blue', arrowstyle='-[', arrowsize=7)
+            plt.suptitle((name + f'organized using {pos_name}'))
+            plt.savefig(name + f'_{pos_name}.png')
+            plt.close()
+
+    def createMotifDeltaNetworkGraph(self, network, name, motif_index):
+        network = UtilFunctions.Network2NetworkX(network)
+        edges = network.edges()
+        colors = [[], []]
+        widths = [[], []]
+        for u, v in edges:
+
+            if network[u][v]['function'] == 2:
+                index = 0
+            else:
+                index = 1
+
+            motifs = network[u][v]['motifs']
+            width = 0.7
+            if motif_index < len(motifs):
+                if motifs[motif_index] == 1:
+                    width = 2
+            widths[index].append(width)
+
+            delta = network[u][v]['delta']
+            color = 'black'
+            if delta == -1:
+                color = 'red'
+            elif delta == 1:
+                color = 'green'
+            colors[index].append(color)
+
+        node_size = 50
+
+        pos_dict = {}
+        pos_dict['sfdp'] = nx.drawing.nx_agraph.graphviz_layout(network, prog='sfdp')
+        pos_dict['fdp'] = nx.drawing.nx_agraph.graphviz_layout(network, prog='fdp')
+        pos_dict['neato'] = nx.drawing.nx_agraph.graphviz_layout(network, prog='neato')
+
+
+        for pos_name, pos in pos_dict.items():
+            plt.figure(figsize=(10, 6))
+            nx.draw(network, pos=pos, edgelist=[(u, v) for u, v in edges if network[u][v]['function']==2],
+                    node_size=node_size, node_color='blue', edge_color=colors[0], width=widths[0], arrowstyle='->')
+            nx.draw(network, pos=pos, edgelist=[(u, v) for u, v in edges if network[u][v]['function']==1],
+                    node_size=node_size, node_color='blue', edge_color=colors[1], width=widths[1], arrowstyle='-[', arrowsize=7)
+            plt.suptitle((name + f'organized using {pos_name}'))
+            plt.savefig(name + f'_{pos_name}.png')
+            plt.close()
+
+    def createCombinationGraph(self, solutions, name):
+        merged_solutions = UtilFunctions.CombineSolutions(solutions)
+        network = UtilFunctions.Network2NetworkX(merged_solutions)
+        edges = network.edges()
+        weights = [network[u][v]['weight'] for u, v in edges]
+        node_size = 50
+
+        pos_dict = {}
+        pos_dict['sfdp'] = nx.drawing.nx_agraph.graphviz_layout(network, prog='sfdp')
+        pos_dict['fdp'] = nx.drawing.nx_agraph.graphviz_layout(network, prog='fdp')
+        pos_dict['neato'] = nx.drawing.nx_agraph.graphviz_layout(network, prog='neato')
+
+
+        for pos_name, pos in pos_dict.items():
+            plt.figure(figsize=(10, 6))
+            nx.draw(network, pos=pos, edgelist=[(u, v) for u, v in edges if network[u][v]['function']==2], node_size=node_size, node_color='blue', width=weights, arrowstyle='->')
+            nx.draw(network, pos=pos, edgelist=[(u, v) for u, v in edges if network[u][v]['function']==1], node_size=node_size, node_color='blue', width=weights, arrowstyle='-[', arrowsize=7)
+            plt.suptitle((name + f'organized using {pos_name}'))
+            plt.savefig(name + f'_{pos_name}.png')
+            plt.close()
+
+    def createDeltaNetworkGraph(self, deltaNetwork, name):
+        network = UtilFunctions.Network2NetworkX(deltaNetwork)
+        edges = network.edges()
+        colors = [[], []]
+        for u, v in edges:
+            delta = network[u][v]['delta']
+            if network[u][v]['function'] == 2:
+                index = 0
+            else:
+                index = 1
+            if delta == -1:
+                color = 'red'
+            elif delta == 1:
+                color = 'green'
+            else:
+                color = 'black'
+            colors[index].append(color)
+        node_size = 50
+
+        pos_dict = {}
+        pos_dict['sfdp'] = nx.drawing.nx_agraph.graphviz_layout(network, prog='sfdp')
+        pos_dict['fdp'] = nx.drawing.nx_agraph.graphviz_layout(network, prog='fdp')
+        pos_dict['neato'] = nx.drawing.nx_agraph.graphviz_layout(network, prog='neato')
+
+
+        for pos_name, pos in pos_dict.items():
+            plt.figure(figsize=(10, 6))
+            nx.draw(network, pos=pos, edgelist=[(u, v) for u, v in edges if network[u][v]['function']==2], node_size=node_size, node_color='blue', edge_color=colors[0], arrowstyle='->')
+            nx.draw(network, pos=pos, edgelist=[(u, v) for u, v in edges if network[u][v]['function']==1], node_size=node_size, node_color='blue', edge_color=colors[1], arrowstyle='-[', arrowsize=7)
+            plt.suptitle((name + f'organized using {pos_name}'))
+            plt.savefig(name + f'_{pos_name}.png')
+            plt.close()
+
+
+
+
+
+
+
+
 
 
 

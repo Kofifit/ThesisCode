@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import random
 import copy
+import networkx as nx
 import itertools
 import re
 
@@ -100,7 +101,8 @@ class UtilFunctions:
             network[key].extend(np.zeros(len(motifs_df), dtype=int))
         index = -len(motifs_df)
         for i, motif in motifs_df.iterrows():
-            for key in motif['Edges indices']:
+            indices = set(sum(motif['Edges indices'], ()))
+            for key in indices:
                 network[key][index] = 1
             index += 1
         return network
@@ -279,6 +281,41 @@ class UtilFunctions:
             d = -1
             value[-1] = d
             otherNetwork[key] = value
+
+    @staticmethod
+    def Network2NetworkX(network):
+        graph = nx.DiGraph()
+        for edge in network.values():
+            motifs = []
+            if len(edge) > 3:
+                motifs = [m for m in edge[3:]]
+            graph.add_edge(edge[0][0], edge[0][1], weight=edge[-1], function=edge[1], delta=edge[2], motifs=motifs)
+        return graph
+
+    @staticmethod
+    def CombineSolutions(solutions):
+        merged_solutions = {}
+
+        # Determine the frequency of occurrence for each interaction across all solutions
+        for s in solutions:
+            for key, edge in s.items():
+                if key in merged_solutions.keys():
+                    new_val = merged_solutions.get(key)
+                    new_val[-1] += 1
+                else:
+                    new_val = copy.deepcopy(edge)
+                    new_val.append(1)
+                merged_solutions[key] = new_val
+
+        # Normalize frequency value to 0-1 scale
+        for key, val in merged_solutions.items():
+            val[-1] /= len(solutions)
+            merged_solutions[key] = val
+
+        return merged_solutions
+
+
+
 
 
 

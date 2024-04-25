@@ -6,7 +6,7 @@ from time import time
 import itertools
 import re
 import pandas as pd
-from NetworkClass import NetworkDisessembler, NetworkDeltaExtractor, DeltaNetworkMotifAnalyzer
+from NetworkClass import NetworkDisessembler, NetworkDeltaExtractor, DeltaNetworkMotifAnalyzer, GraphVisualization
 
 
 if __name__ == '__main__':
@@ -45,6 +45,7 @@ if __name__ == '__main__':
     # Define lists of sizes and deltas for testing
     sizes = [10, 20, 30, 40, 50]
     deltas = [0.05, 0.1, 0.15, 0.2]
+    deltas = [0.1]
 
     # Iterate over each delta size
     for d in deltas:
@@ -83,93 +84,101 @@ if __name__ == '__main__':
             n = 3
             filename = '/Users/renanabenyehuda/PycharmProjects/ThesisAlgorithm/Thesis code/Solutions/solutionsFull.xlsx'
             solutions = UtilFunctions.excel2solutionSetList(filename)
-            analyses_full = []
-            time_full = []
-            for i, s in enumerate(solutions):
-                start_time = time()
-                # Perform motif analysis the original solutions
-                analyzer = DeltaNetworkMotifAnalyzer(s, n)
-                analysis = analyzer.originAnalysis
-                analyses_full.append(analysis)
-                # Save analysis results to CSV files
-                filename = f'Analyses/delta{delta_size}_size{network_size}_Analysis{i}_full.csv'
-                analyzer.saveAnalysis(analyzer.originAnalysis, filename)
-                end_time = time()
-                elapsed_time = end_time - start_time
-                time_full.append(elapsed_time)
-            ave_time = sum(time_full)/len(time_full)
-            print(f'Average time full analysis took was {ave_time} seconds')
-            print('Time for each full analysis below:')
-            print(time_full)
+            # analyses_full = []
+            # time_full = []
+            # for i, s in enumerate(solutions):
+            #     start_time = time()
+            #     # Perform motif analysis the original solutions
+            #     analyzer = DeltaNetworkMotifAnalyzer(s, n)
+            #     analysis = analyzer.originAnalysis
+            #     analyses_full.append(analysis)
+            #     # Save analysis results to CSV files
+            #     filename = f'Analyses/delta{delta_size}_size{network_size}_Analysis{i}_full.csv'
+            #     analyzer.saveAnalysis(analyzer.originAnalysis, filename)
+            #     end_time = time()
+            #     elapsed_time = end_time - start_time
+            #     time_full.append(elapsed_time)
+            # ave_time = sum(time_full)/len(time_full)
+            # print(f'Average time full analysis took was {ave_time} seconds')
+            # print('Time for each full analysis below:')
+            # print(time_full)
 
             # Test delta extraction on modified solutions
             n = 3
             filename = '/Users/renanabenyehuda/PycharmProjects/ThesisAlgorithm/Thesis code/Solutions/solutionsModified.xlsx'
             solutions = UtilFunctions.excel2solutionSetList(filename)
-            analyses_modified = []
-            time_modified = []
-            for i, s in enumerate(solutions):
-                start_time = time()
-                if i == 0:
-                    # Perform motif analysis the original solution
-                    analyzer = DeltaNetworkMotifAnalyzer(s, n)
-                    analysis = analyzer.originAnalysis
-                else:
-                    # Extract delta network from modified solutions
-                    extractor = NetworkDeltaExtractor(n, s)
-                    extractor.extractDeltaNetwork()
-                    delta = extractor.getDeltaNetwork()
-                    deltaNetwork = NetworkDisessembler(delta).getNetwork()
-                    # Perform motif analysis on the delta network
-                    analysis = analyzer.analyze(deltaNetwork)
-                    analysis = analyzer.compare(s, deltaNetwork, analysis)
-                    end_time = time()
-                    elapsed_time = end_time - start_time
-                    time_modified.append(elapsed_time)
+            # analyses_modified = []
+            # time_modified = []
+            # for i, s in enumerate(solutions):
+            #     start_time = time()
+            #     if i == 0:
+            #         # Perform motif analysis the original solution
+            #         analyzer = DeltaNetworkMotifAnalyzer(s, n)
+            #         analysis = analyzer.originAnalysis
+            #     else:
+            #         # Extract delta network from modified solutions
+            #         extractor = NetworkDeltaExtractor(n, s)
+            #         extractor.extractDeltaNetwork()
+            #         delta = extractor.getDeltaNetwork()
+            #         deltaNetwork = NetworkDisessembler(delta).getNetwork()
+            #         # Perform motif analysis on the delta network
+            #         analysis = analyzer.analyze(deltaNetwork)
+            #         analysis = analyzer.compare(s, deltaNetwork, analysis)
+            #         end_time = time()
+            #         elapsed_time = end_time - start_time
+            #         time_modified.append(elapsed_time)
+            #
+            #     # Save analysis results to CSV files
+            #     filename = f'Analyses/delta{delta_size}_size{network_size}_Analysis{i}_modified.csv'
+            #     analyses_modified.append(analysis)
+            #     analyzer.saveAnalysis(analysis, filename)
+            #
+            # ave_time = sum(time_modified)/len(time_modified)
+            # print(f'Average time modified analysis took was {ave_time} seconds')
+            # print('Time for each modified analysis below:')
+            # print(time_modified)
+            #
+            # ## Compare full analyses vs. modified analyses
+            # for i in range(0, solutions_number):
+            #     print('### ANALYSIS NO.' + str(i))
+            #     analysis_full = analyses_full[i]
+            #     analysis_modified = analyses_modified[i]
+            #     for row_num, row_full in analysis_full.iterrows():
+            #         row_modified = analysis_modified.loc[row_num]
+            #         motif_full = row_full['Motif']
+            #         motif_modified = row_modified['Motif']
+            #         if motif_full != motif_modified:
+            #             print(f'Motif is not the same in row {row_num}')
+            #             print('Full:')
+            #             print(motif_full)
+            #             print('modified')
+            #             print(motif_modified)
+            #         num_full = row_full['Number of appearances in network']
+            #         num_modified = row_modified['Number of appearances in network']
+            #         if num_full != num_modified:
+            #             print(f'Number of appearances is not the same in row {row_num}')
+            #             print('modified is missing:')
+            #             print(num_full-num_modified)
+            #         indices_full = set(row_full['Edges indices'])
+            #         indices_modified = set(row_modified['Edges indices'])
+            #         if indices_full != indices_modified:
+            #             print(f'Indices list is not the same in Motif No. {row_num}')
+            #             if indices_full.difference(indices_modified):
+            #                 print('Missing locations in modified analysis:')
+            #                 print(indices_full.difference(indices_modified))
+            #             if indices_modified.difference(indices_full):
+            #                 print('Missing locations in full analysis:')
+            #                 print(indices_modified.difference(indices_full))
 
-                # Save analysis results to CSV files
-                filename = f'Analyses/delta{delta_size}_size{network_size}_Analysis{i}_modified.csv'
-                analyses_modified.append(analysis)
-                analyzer.saveAnalysis(analysis, filename)
-
-            ave_time = sum(time_modified)/len(time_modified)
-            print(f'Average time modified analysis took was {ave_time} seconds')
-            print('Time for each modified analysis below:')
-            print(time_modified)
-
-
-
-    ## Compare full analyses vs. modified analyses
-    for i in range(0, solutions_number):
-        print('### ANALYSIS NO.' + str(i))
-        analysis_full = analyses_full[i]
-        analysis_modified = analyses_modified[i]
-        for row_num, row_full in analysis_full.iterrows():
-            row_modified = analysis_modified.loc[row_num]
-            motif_full = row_full['Motif']
-            motif_modified = row_modified['Motif']
-            if motif_full != motif_modified:
-                print(f'Motif is not the same in row {row_num}')
-                print('Full:')
-                print(motif_full)
-                print('modified')
-                print(motif_modified)
-            num_full = row_full['Number of appearances in network']
-            num_modified = row_modified['Number of appearances in network']
-            if num_full != num_modified:
-                print(f'Number of appearances is not the same in row {row_num}')
-                print('modified is missing:')
-                print(num_full-num_modified)
-            indices_full = set(row_full['Edges indices'])
-            indices_modified = set(row_modified['Edges indices'])
-            if indices_full != indices_modified:
-                print(f'Indices list is not the same in Motif No. {row_num}')
-                if indices_full.difference(indices_modified):
-                    print('Missing locations in modified analysis:')
-                    print(indices_full.difference(indices_modified))
-                if indices_modified.difference(indices_full):
-                    print('Missing locations in full analysis:')
-                    print(indices_modified.difference(indices_full))
+            motifs_df = runAnalysis(3, solutions[2])
+            new_network = UtilFunctions.addMotifs2Network(solutions[2], motifs_df)
+            ## Draw combination graph for all solutions
+            GraphDrawer = GraphVisualization(solutions)
+            GraphDrawer.createCombinationGraph(solutions, f"Graph-Combined_solutions-Network_size={s}")
+            GraphDrawer.createDeltaNetworkGraph(solutions[2], f"Graph-Delta-Network_size={s}_solution2")
+            GraphDrawer.createRegularGraph(solutions[2], f"Graph-Regular-Network_size={s}_solution2")
+            GraphDrawer.createMotifDeltaNetworkGraph(new_network, f"Graph-Motif_delta-Network_size={s}_solution2", 1)
+            GraphDrawer.createMotifNetworkGraph(new_network, f"Graph-Motif_reg-Network_size={s}_solution2", 1)
 
 
 
