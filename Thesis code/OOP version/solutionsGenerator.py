@@ -170,15 +170,15 @@ if __name__ == '__main__':
             #                 print('Missing locations in full analysis:')
             #                 print(indices_modified.difference(indices_full))
 
-            motifs_df = runAnalysis(3, solutions[2])
-            new_network = UtilFunctions.addMotifs2Network(solutions[2], motifs_df)
-            ## Draw combination graph for all solutions
-            GraphDrawer = GraphVisualization(solutions)
-            GraphDrawer.createCombinationGraph(solutions, f"Graph-Combined_solutions-Network_size={s}")
-            GraphDrawer.createDeltaNetworkGraph(solutions[2], f"Graph-Delta-Network_size={s}_solution2")
-            GraphDrawer.createRegularGraph(solutions[2], f"Graph-Regular-Network_size={s}_solution2")
-            GraphDrawer.createMotifDeltaNetworkGraph(new_network, f"Graph-Motif_delta-Network_size={s}_solution2", 1)
-            GraphDrawer.createMotifNetworkGraph(new_network, f"Graph-Motif_reg-Network_size={s}_solution2", 1)
+            # motifs_df = runAnalysis(3, solutions[2])
+            # new_network = UtilFunctions.addMotifs2Network(solutions[2], motifs_df)
+            # ## Draw combination graph for all solutions
+            # GraphDrawer = GraphVisualization(solutions)
+            # GraphDrawer.createCombinationGraph(solutions, f"Graph-Combined_solutions-Network_size={s}")
+            # GraphDrawer.createDeltaNetworkGraph(solutions[2], f"Graph-Delta-Network_size={s}_solution2")
+            # GraphDrawer.createRegularGraph(solutions[2], f"Graph-Regular-Network_size={s}_solution2")
+            # GraphDrawer.createMotifDeltaNetworkGraph(new_network, f"Graph-Motif_delta-Network_size={s}_solution2", 1)
+            # GraphDrawer.createMotifNetworkGraph(new_network, f"Graph-Motif_reg-Network_size={s}_solution2", 1)
 
 
 

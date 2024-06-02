@@ -2,6 +2,7 @@ from main import runAnalysis
 from util_functions import UtilFunctions
 import networkx as nx
 import matplotlib.pyplot as plt
+import GTrie
 
 
 import pandas as pd
