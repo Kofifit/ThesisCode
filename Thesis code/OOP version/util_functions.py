@@ -45,6 +45,23 @@ class UtilFunctions:
         except Exception as error:
             return error
 
+    @staticmethod
+    def network2txt(filename, network, col_names):
+        '''
+        Converts a dictionary representing a network into a CSV file.
+
+        Parameters:
+            filename (str): The name of the CSV file to save the network data.
+            network (dict): A dictionary representing the network.
+            col_names (list): A list of column names for the CSV file.
+        '''
+        try:
+            df = UtilFunctions.network2df(network, col_names)
+            df.drop(columns=['delta'], inplace=True)
+            df.to_csv(filename, sep=' ', header=False, index=False)
+        except Exception as error:
+            return error
+
 
     @staticmethod
     def df2network(df):
@@ -241,14 +258,14 @@ class UtilFunctions:
         while counter < solution_number:
             counter += 1
             if counter == 1:
-                keys = random.sample(network.keys(), network_size)
+                keys = random.sample(list(network.keys()), network_size)
                 origin_keys = keys
                 for k in network.keys():
                     if k not in origin_keys:
                         rest_keys.append(k)
             else:
-                keys_from_origin = random.sample(origin_keys, math.floor(network_size*(1-delta_size)))
-                keys_from_rest = random.sample(rest_keys, math.ceil(network_size*delta_size))
+                keys_from_origin = random.sample(origin_keys, math.ceil(network_size*(1-delta_size)))
+                keys_from_rest = random.sample(rest_keys, math.floor(network_size*delta_size))
                 keys = keys_from_origin + keys_from_rest
 
             solution_temp = {k: network[k] for k in keys if k in network}

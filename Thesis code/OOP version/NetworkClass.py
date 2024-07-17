@@ -1,11 +1,9 @@
-from main import runAnalysis
+from BruteForceAlgorithm import runAnalysis
 from util_functions import UtilFunctions
 import networkx as nx
 import matplotlib.pyplot as plt
-import GTrie
+from gtrieRunner import runAnalysisNauty
 
-
-import pandas as pd
 
 class Network:
     """
@@ -416,7 +414,7 @@ class DeltaNetworkMotifAnalyzer:
     Analyzes delta network motifs and compares them with the original network.
     """
 
-    def __init__(self, originNetwork, motif_size):
+    def __init__(self, originNetwork, motif_size, analysis_type):
         """
         Initializes a DeltaNetworkMotifAnalyzer object with the original network and motif size.
 
@@ -426,6 +424,7 @@ class DeltaNetworkMotifAnalyzer:
         """
         self.originNetwork = originNetwork  # Original network for analysis
         self.motif_size = motif_size  # Motif size for analysis
+        self.analysis_type = analysis_type
         self.originAnalysis = self.analyze(self.originNetwork)  # Perform analysis on the original network
 
     def analyze(self, network):
@@ -438,7 +437,10 @@ class DeltaNetworkMotifAnalyzer:
         Returns:
             DataFrame: DataFrame containing analysis results.
         """
-        df = runAnalysis(self.motif_size, network)
+        if self.analysis_type == 'BruteForce':
+            df = runAnalysis(self.motif_size, network)
+        elif self.analysis_type == 'Nauty':
+            df = runAnalysisNauty(self.motif_size, network)
         return df
 
     def saveAnalysis(self, df, filename):

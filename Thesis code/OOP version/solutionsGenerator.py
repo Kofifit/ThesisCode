@@ -1,7 +1,7 @@
 import math
 
 from util_functions import UtilFunctions
-from main import runAnalysis
+from BruteForceAlgorithm import runAnalysis
 from time import time
 import itertools
 import re
@@ -43,100 +43,104 @@ if __name__ == '__main__':
 
 
     # Define lists of sizes and deltas for testing
-    sizes = [10, 20, 30, 40, 50]
-    deltas = [0.05, 0.1, 0.15, 0.2]
-    deltas = [0.1]
+    algorithms = ["Nauty", "BruteForce"]
+    sizes = [30, 40, 50, 60]
+    deltas = [0.1, 0.2]
 
-    # Iterate over each delta size
-    for d in deltas:
-        delta_size = d
-        print(f'\n##### TEST FOR DELTA SIZE {delta_size} #####')
+    for algo_type in algorithms:
+        # Iterate over each delta size
+        for d in deltas:
+            delta_size = d
 
-        # Iterate over each network size
-        for s in sizes:
-            network_size = s
-            print(f'\n#### TEST FOR NETWORK WITH {network_size} INTERACTIONS ####\n')
+            # Iterate over each network size
+            for s in sizes:
+                network_size = s
 
-            # # Generate random solutions based on the network size and delta size
-            solutions_number = 10
-            filename = '/Users/renanabenyehuda/PycharmProjects/ThesisAlgorithm/Thesis code/network.csv'
-            network = UtilFunctions.csv2network(filename)
-            additional_edges_number = int(network_size * delta_size)
+                # # Generate random solutions based on the network size and delta size
+                solutions_number = 10
+                filename = 'network.csv'
+                network = UtilFunctions.csv2network(filename)
+                additional_edges_number = int(network_size * delta_size)
 
-            # Ensure the number of solutions is feasible by adding additional edges
-            test = math.comb(additional_edges_number, int( network_size * delta_size))
-            while solutions_number**2 > math.comb(additional_edges_number, math.ceil(network_size * delta_size)):
-                additional_edges_number += 2
-                test = math.comb(additional_edges_number, math.ceil(network_size * delta_size))
+                # Ensure the number of solutions is feasible by adding additional edges
+                test = math.comb(additional_edges_number, int(network_size * delta_size))
+                while solutions_number**2 > math.comb(additional_edges_number, math.ceil(network_size * delta_size)):
+                    additional_edges_number += 2
+                    test = math.comb(additional_edges_number, math.ceil(network_size * delta_size))
 
-            # Slice the network based on the adjusted size
-            network = dict(itertools.islice(network.items(), int(network_size+additional_edges_number)))
+                # Slice the network based on the adjusted size
+                network = dict(itertools.islice(network.items(), int(network_size+additional_edges_number)))
 
-            # Generate random solution set and save them to excel file
-            solution_set = UtilFunctions.generateRandSolutionSet(network, solutions_number, network_size, delta_size)
-            filename_full = '/Users/renanabenyehuda/PycharmProjects/ThesisAlgorithm/Thesis code/Solutions/solutionsFull.xlsx'
-            filename_modified = '/Users/renanabenyehuda/PycharmProjects/ThesisAlgorithm/Thesis code/Solutions/solutionsModified.xlsx'
-            col_names = ['edge', 'Activation/Repression', 'delta']
-            UtilFunctions.solutionSetFull2excel(solution_set, col_names, filename_full)
-            UtilFunctions.solutionSetModified2excel(solution_set, col_names, filename_modified)
+                # Generate random solution set and save them to excel file
+                solution_set = UtilFunctions.generateRandSolutionSet(network, solutions_number, network_size, delta_size)
+                filename_full = '/home/ubuntu/PycharmProjects/ThesisCode/Thesis code/Solutions/solutionsFull.xlsx'
+                filename_modified = '/home/ubuntu/PycharmProjects/ThesisCode/Thesis code/Solutions/solutionsModified.xlsx'
+                col_names = ['edge', 'Activation/Repression', 'delta']
+                UtilFunctions.solutionSetFull2excel(solution_set, col_names, filename_full)
+                UtilFunctions.solutionSetModified2excel(solution_set, col_names, filename_modified)
 
-            # Test delta extraction on full solutions
-            n = 3
-            filename = '/Users/renanabenyehuda/PycharmProjects/ThesisAlgorithm/Thesis code/Solutions/solutionsFull.xlsx'
-            solutions = UtilFunctions.excel2solutionSetList(filename)
-            # analyses_full = []
-            # time_full = []
-            # for i, s in enumerate(solutions):
-            #     start_time = time()
-            #     # Perform motif analysis the original solutions
-            #     analyzer = DeltaNetworkMotifAnalyzer(s, n)
-            #     analysis = analyzer.originAnalysis
-            #     analyses_full.append(analysis)
-            #     # Save analysis results to CSV files
-            #     filename = f'Analyses/delta{delta_size}_size{network_size}_Analysis{i}_full.csv'
-            #     analyzer.saveAnalysis(analyzer.originAnalysis, filename)
-            #     end_time = time()
-            #     elapsed_time = end_time - start_time
-            #     time_full.append(elapsed_time)
-            # ave_time = sum(time_full)/len(time_full)
-            # print(f'Average time full analysis took was {ave_time} seconds')
-            # print('Time for each full analysis below:')
-            # print(time_full)
+                # Test delta extraction on full solutions
+                n = 3
+                filename = filename_full
+                solutions = UtilFunctions.excel2solutionSetList(filename)
+                analyses_full = []
+                time_full = []
+                for i, sol in enumerate(solutions):
+                    start_time = time()
+                    # Perform motif analysis the original solutions
+                    analyzer = DeltaNetworkMotifAnalyzer(sol, n, algo_type)
+                    analysis = analyzer.analyze(sol)
+                    analyses_full.append(analysis)
+                    # Save analysis results to CSV files
+                    filename = f'Analyses/{algo_type}_delta{delta_size}_size{network_size}_Analysis{i}_full.csv'
+                    analyzer.saveAnalysis(analysis, filename)
+                    # analyzer.saveAnalysis(analyzer.originAnalysis, filename)
+                    end_time = time()
+                    elapsed_time = end_time - start_time
+                    time_full.append(elapsed_time)
+                ave_time = sum(time_full)/len(time_full)
+                print(f"\n##ALGORITHM USED {algo_type}##")
+                print(f'delta = {d}, network size = {s}')
+                print(f'Average time full analysis took was {ave_time} seconds')
+                print('Time for each full analysis below:')
+                print(time_full)
 
-            # Test delta extraction on modified solutions
-            n = 3
-            filename = '/Users/renanabenyehuda/PycharmProjects/ThesisAlgorithm/Thesis code/Solutions/solutionsModified.xlsx'
-            solutions = UtilFunctions.excel2solutionSetList(filename)
-            # analyses_modified = []
-            # time_modified = []
-            # for i, s in enumerate(solutions):
-            #     start_time = time()
-            #     if i == 0:
-            #         # Perform motif analysis the original solution
-            #         analyzer = DeltaNetworkMotifAnalyzer(s, n)
-            #         analysis = analyzer.originAnalysis
-            #     else:
-            #         # Extract delta network from modified solutions
-            #         extractor = NetworkDeltaExtractor(n, s)
-            #         extractor.extractDeltaNetwork()
-            #         delta = extractor.getDeltaNetwork()
-            #         deltaNetwork = NetworkDisessembler(delta).getNetwork()
-            #         # Perform motif analysis on the delta network
-            #         analysis = analyzer.analyze(deltaNetwork)
-            #         analysis = analyzer.compare(s, deltaNetwork, analysis)
-            #         end_time = time()
-            #         elapsed_time = end_time - start_time
-            #         time_modified.append(elapsed_time)
-            #
-            #     # Save analysis results to CSV files
-            #     filename = f'Analyses/delta{delta_size}_size{network_size}_Analysis{i}_modified.csv'
-            #     analyses_modified.append(analysis)
-            #     analyzer.saveAnalysis(analysis, filename)
-            #
-            # ave_time = sum(time_modified)/len(time_modified)
-            # print(f'Average time modified analysis took was {ave_time} seconds')
-            # print('Time for each modified analysis below:')
-            # print(time_modified)
+                # Test delta extraction on modified solutions
+                n = 3
+                filename = filename_modified
+                solutions = UtilFunctions.excel2solutionSetList(filename)
+                analyses_modified = []
+                time_modified = []
+                for i, sol in enumerate(solutions):
+                    start_time = time()
+                    if i == 0:
+                        # Perform motif analysis the original solution
+                        analyzer = DeltaNetworkMotifAnalyzer(sol, n, algo_type)
+                        analysis = analyzer.originAnalysis
+                    else:
+                        # Extract delta network from modified solutions
+                        extractor = NetworkDeltaExtractor(n, sol)
+                        extractor.extractDeltaNetwork()
+                        delta = extractor.getDeltaNetwork()
+                        deltaNetwork = NetworkDisessembler(delta).getNetwork()
+                        # Perform motif analysis on the delta network
+                        analysis = analyzer.analyze(deltaNetwork)
+                        analysis = analyzer.compare(sol, deltaNetwork, analysis)
+                        end_time = time()
+                        elapsed_time = end_time - start_time
+                        time_modified.append(elapsed_time)
+
+                    # Save analysis results to CSV files
+                    filename = f'Analyses/{algo_type}_delta{delta_size}_size{network_size}_Analysis{i}_modified.csv'
+                    analyses_modified.append(analysis)
+                    analyzer.saveAnalysis(analysis, filename)
+
+                ave_time = sum(time_modified)/len(time_modified)
+                print(f"\n##ALGORITHM USED {algo_type}##")
+                print(f'delta = {d}, network size = {s}')
+                print(f'Average time modified analysis took was {ave_time} seconds')
+                print('Time for each modified analysis below:')
+                print(time_modified)
             #
             # ## Compare full analyses vs. modified analyses
             # for i in range(0, solutions_number):
