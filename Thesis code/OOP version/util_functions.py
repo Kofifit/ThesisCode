@@ -331,6 +331,102 @@ class UtilFunctions:
 
         return merged_solutions
 
+    @staticmethod
+    def get_unique_nodes(vector):
+        # This function get a vector of integers
+        # It returns the unique values in the vector, in the order they appeared
+        # For example: vector = [1,0,0,2] --> the function returns [1,0,2]
+
+        output = []
+        for val in vector:
+            if val not in output or not output:
+                output.append(val)
+        return output
+
+    @staticmethod
+    def get_label_dict(old_labels, new_labels):
+        # This function get two lists - old_labels of nodes and new_labels of nodes
+        # It returns a dictionary that matches the old labels to the new labels
+
+        label_dict = dict()
+        for i, old in enumerate(old_labels):
+            label_dict[old] = new_labels[i]
+        return label_dict
+
+    @staticmethod
+    def get_all_possible_edges(n):
+        # This function get an integer n as the number of nodes
+        # It returns a dictionary with all possible edges with n nodes
+        # ** NOTE all returned edges are positive ([[node, node], positive(1)/negative(2) ]
+
+        # Define dict to store all possible edges
+        all_edges = dict()
+        # Loop to find all possible edges
+        index = 0
+        for n1 in range(0, n):
+            for n2 in range(0, n):
+                if n1 != n2:
+                    all_edges[index] = [[n1, n2], 1]
+                    index += 1
+        return all_edges
+
+    @staticmethod
+    def get_graph(combo, network):
+        # This function get a list of edges
+        # It returns a subgraph as a dict and as a Graph as well as a list of all nodes in the subgraph
+
+        subgraph = dict()
+        g = Graph()
+        nodes_subgraph = []
+        for edge in combo:
+            edge = network[edge][0]
+            if edge[0] not in subgraph:
+                subgraph[edge[0]] = []
+            subgraph[edge[0]].append(edge[1])  # Save subgraph
+            g.addEdge(edge[0], edge[1])  # Save subgraph in Graph class for DFS algorithm
+            nodes_subgraph.extend([edge[0], edge[1]])
+        return subgraph, g, np.array(nodes_subgraph)
+
+    @staticmethod
+    def get_buffer_graph(combo, subgraph):
+        # This function get a list of new labels for subgraph's nodes and a subgraph
+        # It returns a buffer_subgraph with new labeled nodes
+
+        buffer_subgraph = dict()
+        buffer_subgraph['Matched'] = True
+        for key, val in subgraph.items():
+            if key != 'Matched':
+                buffer_subgraph[combo[key]] = sorted([combo[v] for v in val])
+        return buffer_subgraph
+
+    @staticmethod
+    def has_n_nodes(n, nodes_subgraph):
+        # This function get a list of nodes and a list of the nodes in a subgraph
+        # It returns True if subgraph has all nodes and False otherwise
+
+        nodes_subgraph = np.unique(nodes_subgraph)
+        nodes_num = len(nodes_subgraph)
+        if np.array_equal(n, nodes_num):
+            return True
+        else:
+            return False
+
+    @staticmethod
+    def is_fully_connected(graph, start_node=0):
+        # This function get a Graph and checks if it is fully connected with DFS algorithm
+        # It returns True if the graph is fully connected and False otherwise
+
+        return graph.DFS(start_node)
+
+    @staticmethod
+    def is_subgraph_found(subgraph_indices, all_indices):
+
+        for graph in all_indices:
+            if len(graph) > len(subgraph_indices):
+                if set(subgraph_indices).issubset(set(graph)):
+                    return True
+        return False
+
 
 
 

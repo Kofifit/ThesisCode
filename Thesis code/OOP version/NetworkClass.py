@@ -2,7 +2,10 @@ from BruteForceAlgorithm import runAnalysis
 from util_functions import UtilFunctions
 import networkx as nx
 import matplotlib.pyplot as plt
+import numpy as np
 from gtrieRunner import runAnalysisNauty
+import re
+import itertools
 
 
 class Network:
@@ -532,6 +535,63 @@ class DeltaNetworkMotifAnalyzer:
                 if set(subgraph_indices).issubset(set(graph)):
                     return True
         return False
+
+
+class MotifSearcher:
+
+    def __init__(self, motifs_file, n):
+        self.motifs = self.getMotifs(motifs_file)
+        self.motif_size = n
+        print(self.motifs)
+
+    def getMotifs(self, motifs_file):
+        motifs = []
+        file = open(motifs_file, 'r')
+        lines = file.readlines()
+
+        for line in lines:
+            current_motif = {}
+            nodes_list = line.strip().split(';')
+            for node in nodes_list:
+                source = int(node.split(':')[0])
+                target_genes = [int(s) for s in re.findall(r'\d+', node.split(':')[1])]
+                current_motif[source] = target_genes
+            motifs.append(current_motif)
+
+        return motifs
+
+    def findMotifs(self, analysis):
+        found = np.full(len(self.motifs), False)
+        possCombination = list(itertools.permutations(range(self.motif_size)))
+        for index, row in analysis.iterrows():
+            current_motif = row['Motif']
+            nodes_list = []
+            for node in current_motif.keys():
+                nodes_list.append(node)
+                nodes_list.extend(current_motif[node])
+            nodes_list = set(nodes_list)
+            keep = False
+            for combo in possCombination:
+                if keep:
+                    break
+                combo_dict = UtilFunctions.get_label_dict(nodes_list, combo)
+                buffer_subgraph = UtilFunctions.get_buffer_graph(combo_dict, current_motif)
+                for motif_index, motif in enumerate(self.motifs):
+                    if buffer_subgraph == motif:
+                        found[motif_index] = True
+                        keep = True
+                        break
+            if not keep:
+                analysis.drop([index])
+
+        print('The following motifs were searched for - ')
+        print(self.motifs)
+        print('Here are the motifs that were found in the network - ')
+        print(self.motifs[found == True])
+        print('Here are the motifs that were missing from the network - ')
+        print(self.motifs[found == False])
+
+        return analysis
 
 
 class GraphVisualization:
