@@ -558,7 +558,7 @@ class MotifSearcher:
                 current_motif[source] = target_genes
             motifs.append(current_motif)
 
-        return motifs
+        return np.array(motifs)
 
     def findMotifs(self, analysis):
         found = np.full(len(self.motifs), False)
@@ -576,18 +576,19 @@ class MotifSearcher:
                     break
                 combo_dict = UtilFunctions.get_label_dict(nodes_list, combo)
                 buffer_subgraph = UtilFunctions.get_buffer_graph(combo_dict, current_motif)
+                buffer_subgraph.pop('Matched')
                 for motif_index, motif in enumerate(self.motifs):
                     if buffer_subgraph == motif:
                         found[motif_index] = True
                         keep = True
                         break
             if not keep:
-                analysis.drop([index])
+                analysis.drop([index], inplace=True)
 
         print('The following motifs were searched for - ')
         print(self.motifs)
         print('Here are the motifs that were found in the network - ')
-        print(self.motifs[found == True])
+        print(self.motifs[found])
         print('Here are the motifs that were missing from the network - ')
         print(self.motifs[found == False])
 
