@@ -13,11 +13,11 @@ if __name__ == '__main__':
 
     # Define lists of sizes and deltas for testing
     algorithms = ["Nauty"]
-    sizes = [70, 80]
-    deltas = [0.1, 0.2]
+    sizes = [60, 70]
+    deltas = [0.05, 0.15]
 
-    for n in range(1, 11):
-        filename = f'networks/network{n}.txt'
+    for network_index in range(1, 11):
+        filename = f'networks/network{network_index}.txt'
         network = UtilFunctions.csv2network(filename)
         if len(network.keys()) > 100:
             for algo_type in algorithms:
@@ -30,9 +30,10 @@ if __name__ == '__main__':
                         network_size = s
                         # # Generate random solutions based on the network size and delta size
                         solutions_number = 10
+                        filename = f'networks/network{network_index}.txt'
+                        network = UtilFunctions.csv2network(filename)
 
                         additional_edges_number = int(network_size * delta_size)
-
                         # Ensure the number of solutions is feasible by adding additional edges
                         test = math.comb(additional_edges_number, int(network_size * delta_size))
                         while solutions_number**2 > math.comb(additional_edges_number, math.ceil(network_size * delta_size)):
@@ -44,10 +45,10 @@ if __name__ == '__main__':
 
                         # Generate random solution set and save them to excel file
                         solution_set = UtilFunctions.generateRandSolutionSet(network, solutions_number, network_size, delta_size)
-                        filename_full = '/Users/renanabenyehuda/PycharmProjects/ThesisAlgorithm/Thesis code/Solutions/solutionsFull.xlsx'
-                        filename_modified = '/Users/renanabenyehuda/PycharmProjects/ThesisAlgorithm/Thesis code/Solutions/solutionsModified.xlsx'
-                        # filename_full = '/home/ubuntu/PycharmProjects/ThesisCode/Thesis code/Solutions/solutionsFull.xlsx'
-                        # filename_modified = '/home/ubuntu/PycharmProjects/ThesisCode/Thesis code/Solutions/solutionsModified.xlsx'
+                        # filename_full = '/Users/renanabenyehuda/PycharmProjects/ThesisAlgorithm/Thesis code/Solutions/solutionsFull.xlsx'
+                        # filename_modified = '/Users/renanabenyehuda/PycharmProjects/ThesisAlgorithm/Thesis code/Solutions/solutionsModified.xlsx'
+                        filename_full = '/home/ubuntu/PycharmProjects/ThesisCode/Thesis code/Solutions/solutionsFull.xlsx'
+                        filename_modified = '/home/ubuntu/PycharmProjects/ThesisCode/Thesis code/Solutions/solutionsModified.xlsx'
                         col_names = ['edge', 'Activation/Repression', 'delta']
                         UtilFunctions.solutionSetFull2excel(solution_set, col_names, filename_full)
                         UtilFunctions.solutionSetModified2excel(solution_set, col_names, filename_modified)
