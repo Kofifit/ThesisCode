@@ -45,10 +45,10 @@ if __name__ == '__main__':
 
                         # Generate random solution set and save them to excel file
                         solution_set = UtilFunctions.generateRandSolutionSet(network, solutions_number, network_size, delta_size)
-                        # filename_full = '/Users/renanabenyehuda/PycharmProjects/ThesisAlgorithm/Thesis code/Solutions/solutionsFull.xlsx'
-                        # filename_modified = '/Users/renanabenyehuda/PycharmProjects/ThesisAlgorithm/Thesis code/Solutions/solutionsModified.xlsx'
-                        filename_full = '/home/ubuntu/PycharmProjects/ThesisCode/Thesis code/Solutions/solutionsFull.xlsx'
-                        filename_modified = '/home/ubuntu/PycharmProjects/ThesisCode/Thesis code/Solutions/solutionsModified.xlsx'
+                        # filename_full = '/Users/renanabenyehuda/PycharmProjects/ThesisAlgorithm/Thesis_code/Solutions/solutionsFull.xlsx'
+                        # filename_modified = '/Users/renanabenyehuda/PycharmProjects/ThesisAlgorithm/Thesis_code/Solutions/solutionsModified.xlsx'
+                        filename_full = '/Thesis_code/Solutions/solutionsFull.xlsx'
+                        filename_modified = '/Thesis_code/Solutions/solutionsModified.xlsx'
                         col_names = ['edge', 'Activation/Repression', 'delta']
                         UtilFunctions.solutionSetFull2excel(solution_set, col_names, filename_full)
                         UtilFunctions.solutionSetModified2excel(solution_set, col_names, filename_modified)

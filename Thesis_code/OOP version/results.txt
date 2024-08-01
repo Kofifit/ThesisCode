@@ -2,8 +2,8 @@ gtrieScanner Results
 ------------------------------------------
 General Information
 
-Start of Computation: 23h06m52s 31/07/2024
-End of Computation: 23h06m52s 31/07/2024
+Start of Computation: 21h14m20s 01/08/2024
+End of Computation: 21h14m20s 01/08/2024
 
 Subgraph Size: 3
 Graph File: "networkNauty.txt"
@@ -14,11 +14,11 @@ Nr Edges: 51
 Method: ESU on original network
 Different Types of Subgraphs Found [Original Network]: 4
 Subgraph Occurrences Found [Original Network]: 111
-Time for computing census on original network: 0.000120s
+Time for computing census on original network: 0.000189s
 Average time for census on random network: 0.000000s
 
 Number of random networks: 0
-Random seed: 1722460012
+Random seed: 1722539660
 Exchanges per edge: 3
 Number of tries per exchange: 10
 ------------------------------------------

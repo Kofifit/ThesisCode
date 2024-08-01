@@ -7,7 +7,9 @@ def runAnalysisNauty(n, network):
     filename = 'networkNauty.txt'
     col_names = ['edge', 'Activation/Repression', 'delta']
     UtilFunctions.network2txt(filename, network, col_names)
-    subprocess.run(["/home/ubuntu/Downloads/gtrieScanner_src_01/gtrieScanner", "-s", str(n), "-d", "-m", "esu", "-g", filename, "-oc", "locations.txt"])
+    subprocess.run(["/home/ubuntu/Downloads/gtrieScanner_src_01/gtrieScanner", "-s", str(n), "-d", "-m", "esu", "-g", filename, "-oc", "locations.txt"],
+                   stdout=subprocess.DEVNULL,
+                   stderr=subprocess.STDOUT)
     result = convertResult2df(n, network, 'locations.txt')
     return result
 
