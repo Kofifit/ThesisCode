@@ -2,7 +2,6 @@ from util_functions import UtilFunctions
 import subprocess
 import pandas as pd
 
-
 def runAnalysisNauty(n, network):
     filename = 'networkNauty.txt'
     col_names = ['edge', 'Activation/Repression', 'delta']
@@ -72,12 +71,6 @@ def convertGraphBit2Dict(graph, n):
             counter = 0
             node += 1
     return graph_dict
-
-
-
-
-
-
 
 def convertResult2dfDraft(network, filename_results, filename_locations):
 
