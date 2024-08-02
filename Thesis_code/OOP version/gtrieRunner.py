@@ -3,13 +3,13 @@ import subprocess
 import pandas as pd
 
 def runAnalysisNauty(n, network):
-    filename = 'networkNauty.txt'
+    filename = 'bin/networkNauty.txt'
     col_names = ['edge', 'Activation/Repression', 'delta']
     UtilFunctions.network2txt(filename, network, col_names)
-    subprocess.run(["/home/ubuntu/Downloads/gtrieScanner_src_01/gtrieScanner", "-s", str(n), "-d", "-m", "esu", "-g", filename, "-oc", "locations.txt"],
+    subprocess.run(["./gtrieScannerFolder/gtrieScanner", "-s", str(n), "-d", "-m", "esu", "-g", filename,"-o", 'bin/results.txt', "-oc", "bin/locations.txt"],
                    stdout=subprocess.DEVNULL,
                    stderr=subprocess.STDOUT)
-    result = convertResult2df(n, network, 'locations.txt')
+    result = convertResult2df(n, network, 'bin/locations.txt')
     return result
 
 def convertResult2df(n, network, filename_locations):

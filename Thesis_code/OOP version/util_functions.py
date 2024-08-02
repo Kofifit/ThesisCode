@@ -1,11 +1,9 @@
 import math
-
 import pandas as pd
 import numpy as np
 import random
 import copy
 import networkx as nx
-import itertools
 import re
 
 class UtilFunctions:
@@ -276,7 +274,7 @@ class UtilFunctions:
     @staticmethod
     def find_delta(originNetwork, otherNetwork):
         '''
-        Finds the differences between two networks and updates the second network accordingly.
+        Finds the differences between two examples-input and updates the second network accordingly.
 
         Parameters:
             originNetwork (dict): The original network.

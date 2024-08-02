@@ -2,21 +2,12 @@ import argparse
 from time import time
 from util_functions import UtilFunctions
 from NetworkClass import NetworkDisessembler, NetworkDeltaExtractor, DeltaNetworkMotifAnalyzer, GraphVisualization
-import sys
-import os
-
-def blockPrint():
-    sys.stdout = open(os.devnull, 'w')
-
-def enablePrint():
-    sys.stdout = sys.__stdout__
 
 def run(solutions_file, algorithm_type, n, motifs_file, output_file):
 
     solutions = UtilFunctions.excel2solutionSetList(solutions_file)
     analyses_modified = []
     time_modified = []
-    blockPrint()
     for i, sol in enumerate(solutions):
         start_time = time()
         if i == 0:
@@ -41,7 +32,6 @@ def run(solutions_file, algorithm_type, n, motifs_file, output_file):
         analyses_modified.append(analysis)
         analyzer.saveAnalysis(analysis, filename)
 
-    enablePrint()
     ave_time = sum(time_modified) / len(time_modified)
     print(f"\n##ALGORITHM USED {algorithm_type}##")
     print(f'Average time modified analysis took was {ave_time} seconds')
@@ -58,13 +48,13 @@ def  getGraphs(solutions, analyses_lst):
     GraphDrawer = GraphVisualization(solutions)
     GraphDrawer.createCombinationGraph(solutions, f"Graph-Combined_solutions")
     for i, s in enumerate(solutions):
-        GraphDrawer.createDeltaNetworkGraph(s, f"Graph-Delta_solution_{i}")
-        GraphDrawer.createRegularGraph(s, f"Graph-Regular_solution_{i}")
+        GraphDrawer.createDeltaNetworkGraph(s, f"solution{i}_delta_graph")
+        GraphDrawer.createRegularGraph(s, f"solution{i}_regular_graph")
         motifs_df = analyses_lst[i]
         new_network = UtilFunctions.addMotifs2Network(s, motifs_df)
         for motif_index, m in motifs_df.iterrows():
-            GraphDrawer.createMotifDeltaNetworkGraph(new_network, f"Graph-Motif_delta", motif_index)
-            GraphDrawer.createMotifNetworkGraph(new_network, f"Graph-Motif_reg", motif_index)
+            GraphDrawer.createMotifDeltaNetworkGraph(new_network, f"solution{i}_motif{motif_index}_delta_motif_graph", motif_index)
+            GraphDrawer.createMotifNetworkGraph(new_network, f"solution{i}_motif{motif_index}_regular_motif_graph", motif_index)
 
 
 if __name__ == "__main__":
